@@ -1,0 +1,55 @@
+# =============================================
+# Brown's Heart Care Foundation — .gitignore
+# Vite + React + Supabase
+# =============================================
+
+# ---- Environment Variables (NEVER commit these) ----
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# ---- Dependencies ----
+node_modules/
+.pnp
+.pnp.js
+
+# ---- Build Output ----
+dist/
+dist-ssr/
+build/
+
+# ---- Vite Cache ----
+.vite/
+vite.config.js.timestamp-*
+
+# ---- Logs ----
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# ---- OS Files ----
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---- Editor & IDE ----
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ---- Testing ----
+coverage/
+*.lcov
+
+# ---- Misc ----
+*.local
+.cache/
