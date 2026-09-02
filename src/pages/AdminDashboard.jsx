@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 
 export default function AdminDashboard({ setCurrentPage, donations, volunteers, events, highlights, onUpdateEvents, onUpdateHighlights }) {
-  const { settings, updateSettings, updateStats, updateSocialLinks, updateContactInfo, addStoryEntry, updateStoryEntry, deleteStoryEntry } = useSiteSettings();
+  const { settings, updateSettings, updateStats, updateSocialLinks, updateContactInfo, addStoryEntry, deleteStoryEntry } = useSiteSettings();
 
   const [passcode, setPasscode] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
@@ -37,28 +37,31 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
     image: ''
   });
 
-  // New Event Form State
+  // New Event Form State with Status & Multiple Gallery Files
   const [newEvent, setNewEvent] = useState({
     title: '',
     typeLabel: 'Community Outreach',
+    status: 'Upcoming', // 'Upcoming', 'Current', 'Past'
     date: '',
     location: '',
     desc: '',
     img: '',
-    storyRecord: '',
+    galleryPhotos: [],
+    videoUrl: '',
     featured: true
   });
 
-  // New Media Highlight Form State
+  // New Media Highlight Form State with Auto Duration
   const [newHighlight, setNewHighlight] = useState({
     title: '',
     category: 'medical',
     categoryLabel: 'Medical Outreach',
     duration: '04:30',
-    date: 'Aug 2024',
+    date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
     views: '1.2K views',
     desc: '',
     videoUrl: '',
+    galleryPhotos: [],
     featured: true
   });
 
@@ -120,25 +123,81 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
     }
   };
 
-  const handleEventImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewEvent(prev => ({ ...prev, img: reader.result }));
-      };
-      reader.readAsDataURL(file);
+  // Multiple Gallery Photo Files Uploader
+  const handleEventGalleryUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      const readers = files.map(file => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(readers).then(images => {
+        setNewEvent(prev => ({
+          ...prev,
+          img: images[0] || prev.img,
+          galleryPhotos: [...prev.galleryPhotos, ...images]
+        }));
+      });
     }
   };
 
+  // Video File Upload with Auto Duration Calculation
   const handleHighlightVideoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setNewHighlight(prev => ({ ...prev, videoUrl: reader.result }));
+        const videoDataUrl = reader.result;
+
+        // Auto calculate video duration using offscreen video element
+        const videoElement = document.createElement('video');
+        videoElement.src = videoDataUrl;
+        videoElement.onloadedmetadata = () => {
+          const seconds = Math.floor(videoElement.duration);
+          const mins = Math.floor(seconds / 60);
+          const secs = seconds % 60;
+          const formattedDuration = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+          setNewHighlight(prev => ({
+            ...prev,
+            videoUrl: videoDataUrl,
+            duration: formattedDuration
+          }));
+        };
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Delete Actions
+  const handleDeleteVolunteer = (volId) => {
+    if (window.confirm('Are you sure you want to delete this volunteer record from the roster?')) {
+      const savedVols = JSON.parse(localStorage.getItem('bhc_volunteers_roster') || '[]');
+      const updatedVols = savedVols.filter(v => v.id !== volId);
+      localStorage.setItem('bhc_volunteers_roster', JSON.stringify(updatedVols));
+      setSelectedVolunteer(null);
+      alert('Volunteer application record deleted.');
+      window.location.reload();
+    }
+  };
+
+  const handleDeleteEvent = (eventId) => {
+    if (window.confirm('Are you sure you want to delete this outreach event?')) {
+      const updated = events.filter(e => e.id !== eventId);
+      onUpdateEvents(updated);
+      alert('Outreach event deleted.');
+    }
+  };
+
+  const handleDeleteHighlight = (highlightId) => {
+    if (window.confirm('Are you sure you want to delete this media highlight?')) {
+      const updated = highlights.filter(h => h.id !== highlightId);
+      onUpdateHighlights(updated);
+      alert('Media highlight deleted.');
     }
   };
 
@@ -161,8 +220,19 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
       img: newEvent.img || 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80'
     };
     onUpdateEvents([item, ...events]);
-    setNewEvent({ title: '', typeLabel: 'Community Outreach', date: '', location: '', desc: '', img: '', storyRecord: '', featured: true });
-    alert('New outreach event published to live site!');
+    setNewEvent({
+      title: '',
+      typeLabel: 'Community Outreach',
+      status: 'Upcoming',
+      date: '',
+      location: '',
+      desc: '',
+      img: '',
+      galleryPhotos: [],
+      videoUrl: '',
+      featured: true
+    });
+    alert(`New outreach event published under ${item.status} status!`);
   };
 
   const handleAddHighlight = (e) => {
@@ -174,8 +244,19 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
       videoUrl: newHighlight.videoUrl || 'https://www.w3schools.com/html/mov_bbb.mp4'
     };
     onUpdateHighlights([item, ...highlights]);
-    setNewHighlight({ title: '', category: 'medical', categoryLabel: 'Medical Outreach', duration: '04:30', date: 'Aug 2024', views: '1.2K views', desc: '', videoUrl: '', featured: true });
-    alert('New media highlight published!');
+    setNewHighlight({
+      title: '',
+      category: 'medical',
+      categoryLabel: 'Medical Outreach',
+      duration: '04:30',
+      date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      views: '1.2K views',
+      desc: '',
+      videoUrl: '',
+      galleryPhotos: [],
+      featured: true
+    });
+    alert('New media highlight published with automatic video duration!');
   };
 
   const handleSendInvitation = (e) => {
@@ -184,7 +265,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
     setTimeout(() => {
       setInvitationSent(false);
       setInvitationMessage('');
-      alert(`Outreach invitation sent to ${selectedVolunteer.email}!`);
+      alert(`Outreach invitation sent to ${selectedVolunteer.email || selectedVolunteer.full_name}!`);
     }, 1200);
   };
 
@@ -345,7 +426,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
               {/* Recent Volunteers Preview */}
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-heading font-bold text-base text-gray-900">Recent Volunteers (Click for Full Profile)</h3>
+                  <h3 className="font-heading font-bold text-base text-gray-900">Recent Volunteers</h3>
                   <button onClick={() => setActiveTab('volunteers')} className="text-xs text-[#b0004a] font-bold hover:underline">View All</button>
                 </div>
                 <div className="space-y-3">
@@ -369,7 +450,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                         </div>
                       </div>
                       <span className="bg-[#ffd9de] text-[#b0004a] px-2.5 py-1 rounded-full text-[10px] font-bold">
-                        Full Details & Photo
+                        Full Details
                       </span>
                     </div>
                   ))}
@@ -404,7 +485,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
           </div>
         )}
 
-        {/* VOLUNTEERS TAB WITH FULL DETAILS & UPLOADED PHOTOS */}
+        {/* VOLUNTEERS TAB WITH DELETE ACTION */}
         {activeTab === 'volunteers' && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 animate-fadeIn">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-4">
@@ -418,10 +499,9 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
               {allVolunteers.map((vol, idx) => (
                 <div 
                   key={idx} 
-                  onClick={() => setSelectedVolunteer(vol)}
-                  className="bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-sm hover:border-[#b0004a] hover:shadow-md transition-all cursor-pointer space-y-4 flex flex-col justify-between"
+                  className="bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-sm hover:border-[#b0004a] transition-all space-y-4 flex flex-col justify-between"
                 >
-                  <div className="space-y-3">
+                  <div className="space-y-3 cursor-pointer" onClick={() => setSelectedVolunteer(vol)}>
                     <div className="flex items-center gap-3">
                       {vol.photo_url || vol.photoUrl ? (
                         <img 
@@ -450,17 +530,24 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                         <span className="material-symbols-outlined text-sm text-[#b0004a] shrink-0">call</span>
                         <span>{vol.phone}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-gray-700">
-                        <span className="material-symbols-outlined text-sm text-[#b0004a] shrink-0">badge</span>
-                        <span className="truncate">{vol.medical_qualifications || vol.qualifications || 'RN Nurse / Skills'}</span>
-                      </div>
                     </div>
                   </div>
 
-                  <button className="w-full py-2 bg-[#b0004a] text-white rounded-xl text-xs font-bold hover:bg-[#90003b] transition-colors flex items-center justify-center gap-1">
-                    <span>View Full Profile & Send Invite</span>
-                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                  </button>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setSelectedVolunteer(vol)}
+                      className="flex-1 py-2 bg-[#b0004a] text-white rounded-xl text-xs font-bold hover:bg-[#90003b] transition-colors"
+                    >
+                      View Profile & Invite
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteVolunteer(vol.id)}
+                      className="px-3 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-xl text-xs font-bold transition-colors"
+                      title="Delete volunteer record"
+                    >
+                      <span className="material-symbols-outlined text-base">delete</span>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -686,7 +773,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
               <div>
                 <h3 className="font-heading font-bold text-xl text-gray-900">Our Story & Outreach Timeline Records</h3>
-                <p className="text-xs text-gray-500">Add or edit history records behind each outreach event.</p>
+                <p className="text-xs text-gray-500">Add or delete history records behind each outreach event.</p>
               </div>
 
               {/* Add Story Form */}
@@ -752,7 +839,8 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                       </div>
                       <button
                         onClick={() => deleteStoryEntry(st.id)}
-                        className="text-red-600 font-bold hover:underline shrink-0 text-xs"
+                        className="text-red-600 font-bold hover:underline shrink-0 text-xs p-1"
+                        title="Delete story record"
                       >
                         Delete
                       </button>
@@ -764,7 +852,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
           </div>
         )}
 
-        {/* EVENTS CMS TAB */}
+        {/* EVENTS CMS TAB WITH STATUS SELECTOR & MULTI-FILE GALLERY UPLOAD */}
         {activeTab === 'events-cms' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fadeIn">
             {/* Form to Add Event */}
@@ -785,6 +873,19 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Event Status</label>
+                    <select
+                      value={newEvent.status}
+                      onChange={(e) => setNewEvent({ ...newEvent, status: e.target.value })}
+                      className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a] font-bold text-[#b0004a]"
+                    >
+                      <option value="Upcoming">Upcoming Event</option>
+                      <option value="Current">Current / Ongoing Event</option>
+                      <option value="Past">Past Event</option>
+                    </select>
+                  </div>
+
+                  <div>
                     <label className="block font-semibold text-gray-700 mb-1">Category Badge</label>
                     <select
                       value={newEvent.typeLabel}
@@ -796,39 +897,49 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                       <option value="Medical Screening">Medical Screening</option>
                     </select>
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block font-semibold text-gray-700 mb-1">Date & Time</label>
                     <input
                       type="text"
                       required
-                      placeholder="Dec 15, 2024 • 9:00 AM"
+                      placeholder="Oct 15, 2025 • 9:00 AM"
                       value={newEvent.date}
                       onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+                      className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Location / Venue</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Community Center, Lagos"
+                      value={newEvent.location}
+                      onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
                       className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Location / Venue</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Community Center, Lagos"
-                    value={newEvent.location}
-                    onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
-                    className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Upload Event Image</label>
+                  <label className="block font-semibold text-gray-700 mb-1">Upload Multiple Gallery Photos (Select files)</label>
                   <input
                     type="file"
+                    multiple
                     accept="image/*"
-                    onChange={handleEventImageUpload}
-                    className="text-xs text-gray-600 w-full"
+                    onChange={handleEventGalleryUpload}
+                    className="text-xs text-gray-600 w-full mb-1"
                   />
+                  {newEvent.galleryPhotos.length > 0 && (
+                    <div className="flex gap-1 overflow-x-auto py-1">
+                      {newEvent.galleryPhotos.map((img, idx) => (
+                        <img key={idx} src={img} alt="Gallery" className="w-12 h-12 rounded object-cover border border-[#b0004a]" />
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -836,7 +947,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                   <textarea
                     rows={3}
                     required
-                    placeholder="Provide details about the upcoming outreach event..."
+                    placeholder="Provide details about this outreach event..."
                     value={newEvent.desc}
                     onChange={(e) => setNewEvent({ ...newEvent, desc: e.target.value })}
                     className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a] resize-none"
@@ -852,36 +963,47 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
               </form>
             </div>
 
-            {/* List of Active Events */}
+            {/* List of Active Events with Delete Action */}
             <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
-              <h3 className="font-heading font-bold text-lg text-gray-900">Active Published Events ({events.length})</h3>
+              <h3 className="font-heading font-bold text-lg text-gray-900">Published Outreach Events ({events.length})</h3>
               <div className="space-y-4">
                 {events.map((evt, idx) => (
                   <div key={idx} className="p-4 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="space-y-1 text-xs">
-                      <div className="flex items-center gap-2">
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                          evt.status === 'Upcoming' ? 'bg-blue-100 text-blue-800' :
+                          evt.status === 'Current' ? 'bg-emerald-100 text-emerald-800 animate-pulse' :
+                          'bg-gray-200 text-gray-700'
+                        }`}>
+                          {evt.status || 'Upcoming'} Event
+                        </span>
                         <span className="bg-[#ffd9de] text-[#b0004a] px-2.5 py-0.5 rounded-full font-bold text-[10px]">
                           {evt.typeLabel}
                         </span>
-                        {evt.featured && (
-                          <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">
-                            Featured
-                          </span>
-                        )}
                       </div>
                       <h4 className="font-heading font-bold text-base text-gray-900">{evt.title}</h4>
                       <p className="text-gray-500">{evt.date} • {evt.location}</p>
                       <p className="text-gray-600 line-clamp-2">{evt.desc}</p>
                     </div>
 
-                    <button
-                      onClick={() => handleToggleEventFeatured(evt.id)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold shrink-0 transition-colors ${
-                        evt.featured ? 'bg-[#b0004a] text-white' : 'bg-gray-200 text-gray-700'
-                      }`}
-                    >
-                      {evt.featured ? 'Featured' : 'Make Featured'}
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => handleToggleEventFeatured(evt.id)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                          evt.featured ? 'bg-[#b0004a] text-white' : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {evt.featured ? 'Featured' : 'Make Featured'}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteEvent(evt.id)}
+                        className="p-1.5 bg-red-100 text-red-700 hover:bg-red-200 rounded-full text-xs font-bold transition-colors"
+                        title="Delete Event"
+                      >
+                        <span className="material-symbols-outlined text-base block">delete</span>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -889,7 +1011,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
           </div>
         )}
 
-        {/* MEDIA & VIDEO UPLOAD CMS TAB */}
+        {/* MEDIA & VIDEO UPLOAD CMS TAB WITH AUTOMATIC VIDEO DURATION */}
         {activeTab === 'highlights-cms' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fadeIn">
             {/* Add Media Form */}
@@ -921,14 +1043,17 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                       <option value="community">Community Aid</option>
                     </select>
                   </div>
+
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">Video Duration</label>
+                    <label className="block font-semibold text-gray-700 mb-1">
+                      Video Duration <span className="text-emerald-600 text-[10px] font-normal">(Auto calculated)</span>
+                    </label>
                     <input
                       type="text"
-                      placeholder="05:15"
+                      placeholder="Auto calculated on upload"
                       value={newHighlight.duration}
                       onChange={(e) => setNewHighlight({ ...newHighlight, duration: e.target.value })}
-                      className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
+                      className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a] font-mono font-bold text-gray-800"
                     />
                   </div>
                 </div>
@@ -941,7 +1066,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                     onChange={handleHighlightVideoUpload}
                     className="text-xs text-gray-600 w-full mb-1"
                   />
-                  <p className="text-[10px] text-gray-400">Or enter external video URL below:</p>
+                  <p className="text-[10px] text-gray-400">Or enter video URL below:</p>
                   <input
                     type="text"
                     placeholder="https://youtube.com/watch?v=..."
@@ -971,7 +1096,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
               </form>
             </div>
 
-            {/* List of Active Highlights */}
+            {/* List of Active Highlights with Delete Action */}
             <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
               <h3 className="font-heading font-bold text-lg text-gray-900">Active Media Showcase ({highlights.length})</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -982,14 +1107,23 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                         <span className="bg-[#ffd9de] text-[#b0004a] px-2.5 py-0.5 rounded-full font-bold text-[10px]">
                           {h.categoryLabel || 'Medical Outreach'}
                         </span>
-                        {h.featured && (
-                          <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">
-                            Featured
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {h.featured && (
+                            <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">
+                              Featured
+                            </span>
+                          )}
+                          <button
+                            onClick={() => handleDeleteHighlight(h.id)}
+                            className="p-1 text-red-600 hover:text-red-800 font-bold"
+                            title="Delete Highlight"
+                          >
+                            <span className="material-symbols-outlined text-base block">delete</span>
+                          </button>
+                        </div>
                       </div>
                       <h4 className="font-heading font-bold text-base text-gray-900">{h.title}</h4>
-                      <p className="text-gray-500">{h.duration} • {h.views}</p>
+                      <p className="text-gray-500 font-mono">⏱️ {h.duration} • {h.views}</p>
                       <p className="text-gray-600 leading-relaxed">{h.desc}</p>
                     </div>
 
@@ -1131,7 +1265,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
         </div>
       )}
 
-      {/* FULL VOLUNTEER PROFILE MODAL */}
+      {/* FULL VOLUNTEER PROFILE MODAL WITH DELETE BUTTON */}
       {selectedVolunteer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-gray-200 space-y-6 relative max-h-[90vh] overflow-y-auto">
@@ -1154,11 +1288,18 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                   {(selectedVolunteer.full_name || selectedVolunteer.name || 'V').charAt(0)}
                 </div>
               )}
-              <div>
+              <div className="flex-1">
                 <h3 className="font-heading font-bold text-xl text-gray-900">{selectedVolunteer.full_name || selectedVolunteer.name}</h3>
                 <p className="text-xs font-bold text-[#b0004a]">{selectedVolunteer.occupation || 'Volunteer'}</p>
                 <p className="text-xs text-gray-500">Submitted: {new Date(selectedVolunteer.created_at || Date.now()).toLocaleDateString()}</p>
               </div>
+              <button
+                onClick={() => handleDeleteVolunteer(selectedVolunteer.id)}
+                className="px-3 py-1.5 bg-red-100 text-red-700 hover:bg-red-200 rounded-xl text-xs font-bold flex items-center gap-1"
+              >
+                <span className="material-symbols-outlined text-sm">delete</span>
+                <span>Delete</span>
+              </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">

@@ -38,10 +38,10 @@ export default function Contact() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <span className="material-symbols-outlined text-xl">location_on</span>
             </div>
-            <h3 className="font-heading font-bold text-lg text-on-surface">Foundation HQ</h3>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
+            <h3 className="font-heading font-bold text-lg text-on-surface">Foundation Base</h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed font-medium">
               {settings.orgName}<br />
-              {settings.contactInfo.address}
+              Lagos, Nigeria (Community Outreach Operations)
             </p>
           </div>
 
@@ -49,11 +49,11 @@ export default function Contact() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <span className="material-symbols-outlined text-xl">call</span>
             </div>
-            <h3 className="font-heading font-bold text-lg text-on-surface">Phone & Hotline</h3>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              Main Line: {settings.contactInfo.phone}<br />
-              Mon - Fri: 8:00 AM - 6:00 PM
-            </p>
+            <h3 className="font-heading font-bold text-lg text-on-surface">Official Phone Lines</h3>
+            <div className="text-xs text-on-surface-variant space-y-1">
+              <p>📞 <strong>Mrs. Brown:</strong> 08136374060 / 09150973161</p>
+              <p>📞 <strong>Miss Esther:</strong> +234 810 736 9839</p>
+            </div>
           </div>
 
           <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-card border border-surface-variant space-y-3">
@@ -62,11 +62,11 @@ export default function Contact() {
             </div>
             <h3 className="font-heading font-bold text-lg text-on-surface">Email Inquiries</h3>
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              General: {settings.contactInfo.email}<br />
-              Volunteers: volunteer@brownheartcare.org
+              ✉️ <strong>Official Email:</strong> brownheartcare@gmail.com
             </p>
           </div>
         </div>
+
 
 
         {/* Contact Form */}

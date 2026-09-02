@@ -22,7 +22,9 @@ const defaultSettings = {
     whatsapp: 'https://wa.me/2348136374060'
   },
   contactInfo: {
-    phone: '08136374060 / 09150973161 (Mr. Brown) | +234 810 736 9839 (Miss Esther)',
+    phone: '08136374060 / 09150973161 (Miss. Brown) | +234 810 736 9839 (Miss Esther)',
+    mrsBrownPhone: '08136374060 / 09150973161',
+    missEstherPhone: '+234 810 736 9839',
     email: 'brownheartcare@gmail.com',
     address: 'Lagos, Nigeria'
   },
@@ -31,7 +33,6 @@ const defaultSettings = {
     accountNumber: '1009761198',
     accountName: 'Aina Esther Oluwatoyin'
   },
-
   ourStoryEntries: [
     {
       id: 'story-1',

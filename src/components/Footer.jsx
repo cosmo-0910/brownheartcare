@@ -50,6 +50,12 @@ export default function Footer({ setCurrentPage, openDonateModal, openVolunteerM
               We are a compassionate outreach foundation dedicated to health screenings, food security, emergency aid, and empowering underserved communities with love and dignity.
             </p>
 
+            <div className="bg-primary/5 p-3.5 rounded-2xl border border-primary/20 space-y-1 text-xs text-on-surface">
+              <p className="font-bold text-primary text-xs uppercase tracking-wider mb-1">Official Foundation Contact Lines</p>
+              <p>📞 <strong>Mrs. Brown:</strong> 08136374060 / 09150973161</p>
+              <p>📞 <strong>Miss Esther:</strong> +234 810 736 9839</p>
+              <p>✉️ <strong>Email:</strong> brownheartcare@gmail.com</p>
+            </div>
 
             {/* Newsletter Form */}
             <div className="pt-2">
