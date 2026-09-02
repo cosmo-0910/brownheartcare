@@ -240,18 +240,18 @@ export default function Donate({ setCurrentPage, onAddDonation }) {
           </div>
         </div>
 
-        {/* Direct Bank Transfer Account Details Section (Requested in Audio 2) */}
+        {/* Direct Bank Transfer Account Details Section */}
         <section className="py-12 mb-16 bg-white rounded-3xl p-8 shadow-sm border-2 border-[#b0004a]/30 space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <span className="bg-[#ffd9de] text-[#b0004a] px-3 py-1 rounded-full text-xs font-bold">
-                Direct Bank Wire Transfer (Anonymous Option)
+                Official Direct Bank Transfer
               </span>
               <h2 className="font-heading font-bold text-2xl text-[#1a1c1c] mt-2">
                 Donate via Direct Bank Account Transfer
               </h2>
               <p className="text-xs text-gray-500 mt-1">
-                Prefer to pay directly via online banking or bank transfer? Use our official foundation account details below.
+                Prefer to make a direct bank transfer? Use our official foundation account details below.
               </p>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-[#ffd9de]/50 text-[#b0004a] flex items-center justify-center shrink-0">
@@ -260,46 +260,34 @@ export default function Donate({ setCurrentPage, onAddDonation }) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
-            {/* Account Details Box 1: NGN Account */}
-            <div className="bg-[#f9f9f9] p-6 rounded-2xl border border-gray-200 space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#b0004a] bg-[#ffd9de] px-2 py-0.5 rounded">
-                Nigerian Naira (NGN ₦)
+            {/* Account Details Box 1: Lotus Bank */}
+            <div className="bg-[#f9f9f9] p-6 rounded-2xl border border-gray-200 space-y-2 lg:col-span-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#b0004a] bg-[#ffd9de] px-2.5 py-0.5 rounded">
+                Official NGO Bank Account
               </span>
-              <h4 className="font-heading font-bold text-base text-gray-900 pt-1">First Bank of Nigeria</h4>
-              <div className="space-y-1 text-xs text-gray-600">
-                <p><strong>Account Name:</strong> Brown's Heart Care Foundation</p>
-                <p><strong>Account Number:</strong> <span className="font-mono font-bold text-base text-[#b0004a]">1029384756</span></p>
-                <p><strong>Sort Code:</strong> 011151000</p>
+              <h4 className="font-heading font-bold text-xl text-gray-900 pt-1">Lotus Bank</h4>
+              <div className="space-y-1.5 text-xs sm:text-sm text-gray-700 pt-1">
+                <p><strong>Account Name:</strong> <span className="text-gray-900 font-bold">Aina Esther Oluwatoyin</span></p>
+                <p><strong>Account Number:</strong> <span className="font-mono font-bold text-xl text-[#b0004a] bg-white px-2 py-0.5 rounded border border-[#b0004a]/30 inline-block">1009761198</span></p>
+                <p><strong>Bank Name:</strong> <span className="font-semibold text-gray-900">Lotus Bank</span></p>
               </div>
             </div>
 
-            {/* Account Details Box 2: USD Domiciliary Account */}
-            <div className="bg-[#f9f9f9] p-6 rounded-2xl border border-gray-200 space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#b0004a] bg-[#ffd9de] px-2 py-0.5 rounded">
-                US Dollar (USD $) Wire
-              </span>
-              <h4 className="font-heading font-bold text-base text-gray-900 pt-1">Zenith Bank Plc</h4>
-              <div className="space-y-1 text-xs text-gray-600">
-                <p><strong>Account Name:</strong> Brown's Heart Care Foundation</p>
-                <p><strong>Account Number:</strong> <span className="font-mono font-bold text-base text-[#b0004a]">5071829304</span></p>
-                <p><strong>Swift Code:</strong> ZEIBNGLA</p>
-              </div>
-            </div>
-
-            {/* Account Details Box 3: Confirmation Info */}
+            {/* Account Details Box 2: Confirmation Info */}
             <div className="bg-[#f9f9f9] p-6 rounded-2xl border border-gray-200 space-y-3 flex flex-col justify-between">
               <div className="space-y-2">
-                <h4 className="font-heading font-bold text-base text-gray-900">Transfer Confirmation</h4>
+                <h4 className="font-heading font-bold text-base text-gray-900">Payment Receipt Confirmation</h4>
                 <p className="text-xs text-gray-600 leading-relaxed">
-                  After completing a direct bank transfer, you may email your payment receipt to <strong>receipts@brownsheartcare.org</strong> for tax exemption records.
+                  After making your transfer, please send payment notification/receipt to <strong>brownheartcare@gmail.com</strong> or call/WhatsApp <strong>08136374060</strong>.
                 </p>
               </div>
               <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1">
-                <span className="material-symbols-outlined text-sm">verified_user</span> Audited NGO Account
+                <span className="material-symbols-outlined text-sm">verified_user</span> Official Verified Foundation Account
               </span>
             </div>
           </div>
         </section>
+
 
         {/* Where Your Money Goes Section */}
         <section className="py-16 border-t border-gray-200 space-y-12">

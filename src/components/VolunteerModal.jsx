@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
   const [step, setStep] = useState(1);
   const [selectedInterests, setSelectedInterests] = useState(['medical', 'events']);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [validationError, setValidationError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -12,11 +16,31 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
     city: '',
     state: '',
     zip: '',
-    availability: 'weekends',
-    qualifications: ''
+    occupation: '',
+    qualifications: '',
+    emergencyContact: '',
+    motivation: '',
+    photoUrl: ''
   });
 
   if (!isOpen) return null;
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        setValidationError('Photo size must be under 10MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result);
+        setFormData(prev => ({ ...prev, photoUrl: reader.result }));
+        setValidationError('');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const toggleInterest = (id) => {
     if (selectedInterests.includes(id)) {
@@ -26,74 +50,181 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
     }
   };
 
-  const handleComplete = () => {
+  const validateStep1 = () => {
+    if (!formData.photoUrl) {
+      setValidationError('Please upload your photo (Compulsory).');
+      return false;
+    }
+    if (!formData.fullName.trim()) {
+      setValidationError('Full Name is compulsory.');
+      return false;
+    }
+    if (!formData.email.trim()) {
+      setValidationError('Email address is compulsory.');
+      return false;
+    }
+    if (!formData.phone.trim()) {
+      setValidationError('Phone number is compulsory.');
+      return false;
+    }
+    if (!formData.street.trim() || !formData.city.trim() || !formData.state.trim()) {
+      setValidationError('Detailed Home Address (Street, City, State) is compulsory.');
+      return false;
+    }
+    setValidationError('');
+    return true;
+  };
+
+  const validateStep3 = () => {
+    if (!formData.occupation.trim()) {
+      setValidationError('Occupation / What you do for a living is compulsory.');
+      return false;
+    }
+    if (!formData.qualifications.trim()) {
+      setValidationError('Medical / Professional Qualifications & Skills are compulsory.');
+      return false;
+    }
+    if (!formData.emergencyContact.trim()) {
+      setValidationError('Emergency Contact Name & Phone is compulsory.');
+      return false;
+    }
+    if (!formData.motivation.trim()) {
+      setValidationError('Motivation for volunteering is compulsory.');
+      return false;
+    }
+    setValidationError('');
+    return true;
+  };
+
+  const handleComplete = async () => {
+    if (!validateStep3()) return;
+
+    setSubmitting(true);
+    const volunteerRecord = {
+      id: window.crypto.randomUUID ? window.crypto.randomUUID() : `vol-${Date.now()}`,
+      full_name: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      street_address: formData.street,
+      city: formData.city,
+      state: formData.state,
+      zip_code: formData.zip,
+      detailed_address: `${formData.street}, ${formData.city}, ${formData.state} ${formData.zip}`.trim(),
+      occupation: formData.occupation,
+      medical_qualifications: formData.qualifications,
+      emergency_contact: formData.emergencyContact,
+      motivation: formData.motivation,
+      photo_url: formData.photoUrl,
+      interests: selectedInterests.map(i => {
+        if (i === 'medical') return 'Medical Screening & Outreach';
+        if (i === 'events') return 'Community Food & Aid';
+        if (i === 'admin') return 'Logistics & Admin Support';
+        if (i === 'fundraising') return 'Resource Mobilization';
+        return 'Patient Support Care';
+      }),
+      created_at: new Date().toISOString(),
+      invitation_status: 'Pending'
+    };
+
+    try {
+      // Save locally to localStorage fallback roster
+      const savedVols = JSON.parse(localStorage.getItem('bhc_volunteers_roster') || '[]');
+      localStorage.setItem('bhc_volunteers_roster', JSON.stringify([volunteerRecord, ...savedVols]));
+
+      // Save to Supabase
+      await supabase.from('volunteers').insert([volunteerRecord]);
+    } catch (err) {
+      console.warn('Saved to local roster; Supabase sync notice:', err.message);
+    }
+
     if (onAddVolunteer) {
       onAddVolunteer({
-        name: formData.fullName || 'Kind Volunteer',
-        email: formData.email || 'volunteer@example.com',
-        phone: formData.phone || '+1 (555) 000-0000',
-        city: formData.city || 'Metropolis',
-        state: formData.state || 'NY',
-        interests: selectedInterests.map(i => {
-          if (i === 'medical') return 'Medical Outreach';
-          if (i === 'events') return 'Community Events';
-          if (i === 'admin') return 'Admin Support';
-          if (i === 'fundraising') return 'Fundraising';
-          return 'Patient Care';
-        }),
-        availability: formData.availability,
-        qualifications: formData.qualifications || 'RN Nurse'
+        id: volunteerRecord.id,
+        name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        city: formData.city,
+        state: formData.state,
+        street: formData.street,
+        occupation: formData.occupation,
+        qualifications: formData.qualifications,
+        emergencyContact: formData.emergencyContact,
+        photoUrl: formData.photoUrl,
+        interests: volunteerRecord.interests
       });
     }
+
+    setSubmitting(false);
     setStep(4);
   };
 
   const handleResetAndClose = () => {
     setStep(1);
+    setPhotoPreview(null);
+    setValidationError('');
+    setFormData({
+      fullName: '',
+      email: '',
+      phone: '',
+      street: '',
+      city: '',
+      state: '',
+      zip: '',
+      occupation: '',
+      qualifications: '',
+      emergencyContact: '',
+      motivation: '',
+      photoUrl: ''
+    });
     onClose();
   };
 
   const interestCards = [
     {
       id: 'medical',
-      title: 'Medical Outreach',
-      desc: 'Assist clinical staff during community health screenings and remote clinics.',
+      title: 'Medical Screening Outreach',
+      desc: 'Assist nurses and doctors during community health checks & vital screenings.',
       icon: 'medical_services'
     },
     {
       id: 'events',
-      title: 'Community Events',
-      desc: 'Help organize and run local awareness events, walks, and educational seminars.',
-      icon: 'groups'
+      title: 'Food & Relief Distribution',
+      desc: 'Organize hot meals, clean water, and nutritional relief packages for families.',
+      icon: 'volunteer_activism'
     },
     {
       id: 'admin',
-      title: 'Admin Support',
-      desc: 'Provide vital office support, data entry, and help manage communications.',
+      title: 'Logistics & Admin Support',
+      desc: 'Help coordinate registration desks, record-keeping, and event logistics.',
       icon: 'table_restaurant'
     },
     {
       id: 'fundraising',
-      title: 'Fundraising',
-      desc: 'Join campaigns to gather resources and secure sponsorships for care programs.',
-      icon: 'volunteer_activism'
+      title: 'Community Resource Drive',
+      desc: 'Help gather clothing, aid supplies, and donor support for poor communities.',
+      icon: 'groups'
     },
     {
       id: 'patient',
-      title: 'Patient Care',
-      desc: 'Offer non-clinical support, companionship, and guidance to patients and families.',
+      title: 'Patient Care & Companionship',
+      desc: 'Offer personal care, comfort, and follow-up guidance to vulnerable beneficiaries.',
       icon: 'favorite'
     }
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
       <div className="bg-[#f9f9f9] rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl border border-gray-200 max-h-[95vh] flex flex-col">
         {/* Top Header Bar */}
         <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#b0004a] text-2xl font-bold">favorite</span>
-            <span className="font-heading font-bold text-lg text-[#b0004a]">HeartCare Foundation</span>
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Brown Heart Care" className="h-8 w-auto object-contain" onError={(e) => e.target.style.display = 'none'} />
+            <div>
+              <span className="font-heading font-bold text-base md:text-lg text-[#b0004a] block leading-none">
+                Brown Heart Care
+              </span>
+              <span className="text-[10px] text-gray-500 italic">Official Volunteer Onboarding</span>
+            </div>
           </div>
           <button
             onClick={handleResetAndClose}
@@ -104,15 +235,15 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
         </div>
 
         {/* Modal Main Content Container */}
-        <div className="p-6 md:p-10 overflow-y-auto space-y-6 flex-grow">
+        <div className="p-5 md:p-8 overflow-y-auto space-y-6 flex-grow">
           {/* Progress Indicator */}
           <div className="space-y-2 max-w-3xl mx-auto">
             <div className="flex justify-between items-center text-xs font-semibold">
               <span className="text-gray-800">Step {step} of 4</span>
               <span className="text-[#b0004a]">
-                {step === 1 && 'Personal Details'}
-                {step === 2 && 'Volunteer Interests'}
-                {step === 3 && 'Availability & Skills'}
+                {step === 1 && 'Photo & Personal Details (Compulsory)'}
+                {step === 2 && 'Outreach Focus Areas'}
+                {step === 3 && 'Occupation & Emergency Contact (Compulsory)'}
                 {step === 4 && 'Registration Complete'}
               </span>
             </div>
@@ -124,94 +255,167 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
             </div>
           </div>
 
-          {/* STEP 1: Personal Details */}
+          {/* Validation Warning Alert */}
+          {validationError && (
+            <div className="max-w-3xl mx-auto p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center gap-2 animate-shake">
+              <span className="material-symbols-outlined text-base text-red-600">error</span>
+              <span>{validationError}</span>
+            </div>
+          )}
+
+          {/* STEP 1: Photo & Personal Details */}
           {step === 1 && (
-            <div className="max-w-3xl mx-auto bg-white rounded-2xl p-8 shadow-sm border border-gray-100 space-y-6 animate-fadeIn">
+            <div className="max-w-3xl mx-auto bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6 animate-fadeIn">
               <div>
-                <h2 className="font-heading font-bold text-2xl text-[#1a1c1c] mb-1">Join Our Mission</h2>
+                <h2 className="font-heading font-bold text-2xl text-[#1a1c1c] mb-1">Volunteer Information</h2>
                 <p className="text-xs text-gray-500">
-                  Please provide your contact information so we can reach you about upcoming volunteer opportunities.
+                  All fields marked with <span className="text-red-500 font-bold">*</span> are compulsory for foundation onboarding.
                 </p>
+              </div>
+
+              {/* Photo Upload Section */}
+              <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300 text-center space-y-3">
+                <label className="block text-xs font-bold text-gray-700">
+                  Upload Volunteer Photo Headshot <span className="text-red-500">*</span>
+                </label>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  {photoPreview ? (
+                    <div className="relative group">
+                      <img 
+                        src={photoPreview} 
+                        alt="Volunteer headshot" 
+                        className="w-24 h-24 rounded-full object-cover border-4 border-[#b0004a] shadow-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => { setPhotoPreview(null); setFormData(p => ({ ...p, photoUrl: '' })); }}
+                        className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full p-1 shadow hover:bg-red-700"
+                        title="Remove photo"
+                      >
+                        <span className="material-symbols-outlined text-xs block">close</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-gray-200 text-gray-400 flex flex-col items-center justify-center border-2 border-dashed border-gray-300">
+                      <span className="material-symbols-outlined text-3xl">add_a_photo</span>
+                      <span className="text-[10px] text-gray-500">No Photo</span>
+                    </div>
+                  )}
+
+                  <div className="text-left space-y-1">
+                    <input
+                      type="file"
+                      id="volunteer-photo-input"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="volunteer-photo-input"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#b0004a] text-white text-xs font-semibold cursor-pointer hover:bg-[#90003b] transition-colors shadow-sm"
+                    >
+                      <span className="material-symbols-outlined text-base">upload_file</span>
+                      <span>{photoPreview ? 'Change Photo' : 'Select Photo File'}</span>
+                    </label>
+                    <p className="text-[11px] text-gray-500">Formats: JPG, PNG, WEBP (Max 10MB)</p>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Full Name</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
-                    placeholder="Jane Doe"
+                    required
+                    placeholder="Enter full legal name..."
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="w-full bg-[#eee] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
+                    className="w-full bg-[#f4f4f4] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">Email Address</label>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Email Address <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="email"
-                      placeholder="jane@example.com"
+                      required
+                      placeholder="email@example.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full bg-[#eee] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
+                      className="w-full bg-[#f4f4f4] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">Phone Number</label>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Phone Number <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="tel"
-                      placeholder="+1 (555) 000-0000"
+                      required
+                      placeholder="+234 800 000 0000"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full bg-[#eee] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
+                      className="w-full bg-[#f4f4f4] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
                     />
                   </div>
                 </div>
 
                 <div className="pt-2">
-                  <h3 className="font-heading font-bold text-sm text-[#1a1c1c] mb-3">Address</h3>
+                  <h3 className="font-heading font-bold text-sm text-[#1a1c1c] mb-3">
+                    Detailed Home Address <span className="text-red-500">*</span>
+                  </h3>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-600 mb-1">Street Address</label>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        Street / Residential Address <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
-                        placeholder="123 Care Lane"
+                        required
+                        placeholder="House No., Street Name, Neighborhood"
                         value={formData.street}
                         onChange={(e) => setFormData({ ...formData, street: e.target.value })}
-                        className="w-full bg-[#eee] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
+                        className="w-full bg-[#f4f4f4] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
                       />
                     </div>
 
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">City</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">City <span className="text-red-500">*</span></label>
                         <input
                           type="text"
-                          placeholder="Metropolis"
+                          required
+                          placeholder="Lagos"
                           value={formData.city}
                           onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                          className="w-full bg-[#eee] border border-transparent rounded-xl py-3 px-3 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
+                          className="w-full bg-[#f4f4f4] border border-transparent rounded-xl py-3 px-3 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">State</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">State <span className="text-red-500">*</span></label>
                         <input
                           type="text"
-                          placeholder="NY"
+                          required
+                          placeholder="Lagos State"
                           value={formData.state}
                           onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                          className="w-full bg-[#eee] border border-transparent rounded-xl py-3 px-3 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
+                          className="w-full bg-[#f4f4f4] border border-transparent rounded-xl py-3 px-3 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1">Zip Code</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Postal Code</label>
                         <input
                           type="text"
-                          placeholder="10001"
+                          placeholder="100001"
                           value={formData.zip}
                           onChange={(e) => setFormData({ ...formData, zip: e.target.value })}
-                          className="w-full bg-[#eee] border border-transparent rounded-xl py-3 px-3 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
+                          className="w-full bg-[#f4f4f4] border border-transparent rounded-xl py-3 px-3 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
                         />
                       </div>
                     </div>
@@ -229,7 +433,9 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
+                  onClick={() => {
+                    if (validateStep1()) setStep(2);
+                  }}
                   className="px-6 py-2.5 rounded-full bg-[#b0004a] text-white text-xs font-semibold hover:bg-[#90003b] transition-colors flex items-center gap-1.5 shadow-sm"
                 >
                   <span>Next Step</span>
@@ -243,9 +449,9 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
           {step === 2 && (
             <div className="max-w-4xl mx-auto space-y-8 animate-fadeIn">
               <div className="text-center space-y-2">
-                <h2 className="font-heading font-bold text-2xl md:text-3xl text-[#1a1c1c]">How would you like to help?</h2>
+                <h2 className="font-heading font-bold text-2xl md:text-3xl text-[#1a1c1c]">Select Your Outreach Areas</h2>
                 <p className="text-xs sm:text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
-                  Select all the areas where you'd be interested in volunteering your time and skills. We'll try to match you with appropriate opportunities.
+                  Choose the foundation outreach activities you would love to participate in.
                 </p>
               </div>
 
@@ -285,45 +491,77 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
                   onClick={() => setStep(3)}
                   className="px-6 py-2.5 rounded-full bg-[#b0004a] text-white text-xs font-semibold hover:bg-[#90003b] transition-colors flex items-center gap-1.5 shadow-sm"
                 >
-                  <span>Next</span>
+                  <span>Next Step</span>
                   <span className="material-symbols-outlined text-sm">arrow_forward</span>
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 3: Availability & Skills */}
+          {/* STEP 3: Occupation, Credentials & Emergency Contact */}
           {step === 3 && (
-            <div className="max-w-3xl mx-auto bg-white rounded-2xl p-8 shadow-sm border border-gray-100 space-y-6 animate-fadeIn">
+            <div className="max-w-3xl mx-auto bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6 animate-fadeIn">
               <div>
-                <h2 className="font-heading font-bold text-2xl text-[#1a1c1c] mb-1">Availability & Credentials</h2>
+                <h2 className="font-heading font-bold text-2xl text-[#1a1c1c] mb-1">Background & Emergency Contact</h2>
                 <p className="text-xs text-gray-500">
-                  Help us organize medical teams and outreach shifts based on your schedule.
+                  Please provide your profession and emergency contact details (Compulsory).
                 </p>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Schedule Preference</label>
-                  <select
-                    value={formData.availability}
-                    onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
-                    className="w-full bg-[#eee] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
-                  >
-                    <option value="weekends">Weekend Outreach Camps Only</option>
-                    <option value="flexible">Flexible Weekday Hours</option>
-                    <option value="oncall">Emergency Medical Response Team</option>
-                  </select>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Occupation / What do you do for a living? <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Registered Nurse, Teacher, Civil Servant, Business Owner..."
+                    value={formData.occupation}
+                    onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+                    className="w-full bg-[#f4f4f4] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Medical License / Skill Qualifications (Optional)</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Medical / Professional Qualifications & Experience <span className="text-red-500">*</span>
+                  </label>
                   <textarea
-                    rows={4}
-                    placeholder="e.g. Registered Nurse (RN), MD Cardiologist, Clinical Support, Event Logistics..."
+                    rows={3}
+                    required
+                    placeholder="Describe your qualifications, skills, medical certifications, or volunteer experience..."
                     value={formData.qualifications}
                     onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
-                    className="w-full bg-[#eee] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a] resize-none"
+                    className="w-full bg-[#f4f4f4] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a] resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Emergency Contact Person & Phone Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Spouse / Relative Name - +234 801 234 5678"
+                    value={formData.emergencyContact}
+                    onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
+                    className="w-full bg-[#f4f4f4] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Why do you want to volunteer with Brown Heart Care? <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    required
+                    placeholder="Share your motivation to help poor and underserved communities..."
+                    value={formData.motivation}
+                    onChange={(e) => setFormData({ ...formData, motivation: e.target.value })}
+                    className="w-full bg-[#f4f4f4] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a] resize-none"
                   />
                 </div>
               </div>
@@ -338,10 +576,11 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
                 </button>
                 <button
                   type="button"
+                  disabled={submitting}
                   onClick={handleComplete}
-                  className="px-6 py-2.5 rounded-full bg-[#b0004a] text-white text-xs font-semibold hover:bg-[#90003b] transition-colors flex items-center gap-1.5 shadow-sm"
+                  className="px-6 py-2.5 rounded-full bg-[#b0004a] text-white text-xs font-semibold hover:bg-[#90003b] transition-colors flex items-center gap-1.5 shadow-sm disabled:opacity-50"
                 >
-                  <span>Complete Registration</span>
+                  <span>{submitting ? 'Submitting...' : 'Complete Registration'}</span>
                   <span className="material-symbols-outlined text-sm">check_circle</span>
                 </button>
               </div>
@@ -356,14 +595,14 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
               </div>
               <h2 className="font-heading font-bold text-2xl text-[#1a1c1c]">Registration Received!</h2>
               <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
-                Thank you, <strong>{formData.fullName || 'Kind Volunteer'}</strong>. Our volunteer coordinator will reach out to you via <strong>{formData.email || 'your email'}</strong> to confirm your upcoming outreach shift.
+                Thank you, <strong>{formData.fullName}</strong>. Your detailed volunteer profile and uploaded photo have been submitted to the Brown Heart Care Foundation team.
               </p>
               <div className="pt-4">
                 <button
                   onClick={handleResetAndClose}
                   className="px-8 py-3 rounded-full bg-[#b0004a] text-white text-xs font-bold shadow-md hover:bg-[#90003b] transition-colors"
                 >
-                  Return to Website
+                  Return to Foundation Home
                 </button>
               </div>
             </div>
@@ -372,7 +611,7 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
 
         {/* Footer info bar */}
         <div className="bg-[#eee] px-6 py-3 border-t border-gray-200 text-center text-[11px] text-gray-500 shrink-0">
-          © 2024 HeartCare Foundation. Registered NGO. All rights reserved.
+          © {new Date().getFullYear()} Brown Heart Care Foundation. "We breathe out love for others to inhale".
         </div>
       </div>
     </div>

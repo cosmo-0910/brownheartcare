@@ -1,6 +1,9 @@
 import React from 'react';
+import { useSiteSettings } from '../context/SiteSettingsContext';
 
 export default function HomeImpact({ setCurrentPage }) {
+  const { settings } = useSiteSettings();
+
   const navTo = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -14,7 +17,7 @@ export default function HomeImpact({ setCurrentPage }) {
           <div 
             className="w-full h-full bg-cover bg-center opacity-25"
             style={{
-              backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuCyzq7097kmw6xbbECjvPQaZQrwdIURVFvPdmG5Tf2owyHvo6uYeUK73KtmgU_7vJirCIAdiGXcTcJevBZT86TuhcWwfF3hASk28j6AZPCImygE1KQWafdbhL0_B-fVm9-Gy_0E48yqEyPmJGDHQiv0TkWBU61fEhoFLILtDcW5ttCCm2HA-8KmqYZuwUYQWbDy-_V-5tdTNYzpz9FFIiO26ysoVLs4nxXS1hlzVYOQRZIv9jy6S-78Pw')`
+              backgroundImage: `url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80')`
             }}
           />
         </div>
@@ -23,15 +26,15 @@ export default function HomeImpact({ setCurrentPage }) {
           {/* Left Text */}
           <div className="w-full lg:w-3/5 space-y-6">
             <span className="inline-block px-4 py-1.5 bg-[#ffd9de] text-[#b0004a] rounded-full text-xs font-semibold">
-              Brown's Heart Care Foundation
+              {settings.orgName}
             </span>
 
             <h1 className="font-heading font-extrabold text-4xl sm:text-6xl text-[#1a1c1c] tracking-tight leading-tight">
-              We breathe out <span className="text-[#b0004a] underline decoration-[#b0004a] underline-offset-8">love</span> for others to inhale
+              {settings.heroTitle}
             </h1>
 
             <p className="text-gray-600 text-sm sm:text-base max-w-xl leading-relaxed">
-              Dedicated to promoting well-being and nutritional stability, providing compassionate care and resources to those who need it most, ensuring a healthier tomorrow.
+              {settings.heroSubtitle}
             </p>
 
             <div className="flex flex-wrap gap-4 pt-2">
@@ -55,14 +58,25 @@ export default function HomeImpact({ setCurrentPage }) {
           <div className="w-full lg:w-2/5 max-w-md">
             <div className="bg-white rounded-2xl p-6 shadow-sm border-t-4 border-[#b0004a] space-y-4">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">
-                Impact Goal 2024
+                Impact Statistics
               </span>
               <div className="flex justify-between items-baseline">
                 <span className="text-xs text-gray-500 font-medium">Lives Touched</span>
-                <span className="font-heading font-bold text-3xl text-[#b0004a]">50,000+</span>
+                <span className="font-heading font-bold text-3xl text-[#b0004a]">{settings.stats.livesTouched}</span>
               </div>
               <div className="w-full h-3 bg-[#ffd9de] rounded-full overflow-hidden">
-                <div className="h-full bg-[#b0004a] w-[75%] rounded-full"></div>
+                <div className="h-full bg-[#b0004a] w-[85%] rounded-full"></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100 text-center">
+                <div>
+                  <span className="font-heading font-bold text-xl text-gray-900 block">{settings.stats.outreachEvents}</span>
+                  <span className="text-[10px] text-gray-500 font-bold uppercase">Outreach Drives</span>
+                </div>
+                <div>
+                  <span className="font-heading font-bold text-xl text-gray-900 block">{settings.stats.activeVolunteers}</span>
+                  <span className="text-[10px] text-gray-500 font-bold uppercase">Volunteers Enrolled</span>
+                </div>
               </div>
             </div>
           </div>
@@ -75,7 +89,7 @@ export default function HomeImpact({ setCurrentPage }) {
           <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
             <h2 className="font-heading font-bold text-3xl text-[#1a1c1c]">Our Core Focus</h2>
             <p className="text-gray-500 text-sm">
-              Building a foundation of hope through targeted health and nutritional interventions.
+              Building a foundation of hope through targeted health and nutritional interventions for underserved communities.
             </p>
           </div>
 
@@ -87,7 +101,7 @@ export default function HomeImpact({ setCurrentPage }) {
               </div>
               <h3 className="font-heading font-bold text-xl text-[#1a1c1c]">Our Mission</h3>
               <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
-                To alleviate suffering and promote holistic well-being by providing accessible healthcare support, vital nutritional resources, and compassionate community outreach, empowering individuals to live healthier, fuller lives.
+                To alleviate suffering and promote holistic well-being by providing accessible health screening support, vital nutritional resources, and compassionate community outreach to the poor and vulnerable.
               </p>
             </div>
 
@@ -98,7 +112,7 @@ export default function HomeImpact({ setCurrentPage }) {
               </div>
               <h3 className="font-heading font-bold text-xl text-[#1a1c1c]">Our Vision</h3>
               <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
-                A world where every individual, regardless of their circumstances, has access to the essential healthcare and nutrition required to thrive, fostering resilient and vibrant communities built on a foundation of care.
+                A world where every underserved individual has access to essential health screening and nutrition, fostering resilient, vibrant communities built on care and dignity.
               </p>
             </div>
           </div>
@@ -111,7 +125,7 @@ export default function HomeImpact({ setCurrentPage }) {
           <div className="md:w-1/3 space-y-3">
             <h2 className="font-heading font-bold text-3xl text-[#1a1c1c]">Global Alignment</h2>
             <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
-              We are committed to advancing the United Nations Sustainable Development Goals, focusing our efforts where they create the most profound impact.
+              We are committed to advancing the United Nations Sustainable Development Goals, focusing our efforts where they create the most profound impact for the underprivileged.
             </p>
           </div>
 
@@ -123,7 +137,7 @@ export default function HomeImpact({ setCurrentPage }) {
               </div>
               <h4 className="font-heading font-bold text-base text-[#1a1c1c]">Zero Hunger</h4>
               <p className="text-gray-500 text-xs">
-                SDG 2: End hunger, achieve food security and improved nutrition.
+                SDG 2: End hunger, achieve food security and improved nutrition for poor families.
               </p>
             </div>
 
@@ -134,25 +148,23 @@ export default function HomeImpact({ setCurrentPage }) {
               </div>
               <h4 className="font-heading font-bold text-base text-[#1a1c1c]">Good Health & Well-being</h4>
               <p className="text-gray-500 text-xs">
-                SDG 3: Ensure healthy lives and promote well-being for all at all ages.
+                SDG 3: Ensure healthy lives and promote well-being for all at all ages through free community screenings.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer matching Image 2 */}
       <footer className="bg-[#e2e2e2] text-gray-700 py-10">
         <div className="max-w-[1100px] mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
           <div>
-            <span className="font-bold text-[#b0004a] text-sm">Brown's Heart Care</span>
-            <p className="text-gray-500 mt-1">© 2024 Brown's Heart Care Foundation. All rights reserved.</p>
+            <span className="font-bold text-[#b0004a] text-sm">{settings.orgName}</span>
+            <p className="text-gray-500 mt-1">© {new Date().getFullYear()} {settings.orgName}. "{settings.tagline}".</p>
           </div>
           <div className="flex gap-6 text-gray-600 font-medium">
             <button onClick={() => navTo('home-impact')} className="hover:underline">Zero Hunger SDG</button>
             <button onClick={() => navTo('events')} className="hover:underline">Good Health SDG</button>
-            <button onClick={() => navTo('donate')} className="hover:underline">Contact Us</button>
-            <button onClick={() => navTo('donate')} className="hover:underline">Privacy Policy</button>
+            <button onClick={() => navTo('donate')} className="hover:underline">Donate</button>
           </div>
         </div>
       </footer>

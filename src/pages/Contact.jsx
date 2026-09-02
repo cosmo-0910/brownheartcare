@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useSiteSettings } from '../context/SiteSettingsContext';
 
 export default function Contact() {
+  const { settings } = useSiteSettings();
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -25,7 +27,7 @@ export default function Contact() {
           Contact Support & HQ
         </h1>
         <p className="text-secondary text-base leading-relaxed">
-          Have questions about medical assistance, donations, corporate partnerships, or upcoming outreach dates? Reach out to our dedicated support team.
+          Have questions about medical outreach assistance, volunteer programs, donations, or corporate partnerships? Reach out to our dedicated foundation team.
         </p>
       </section>
 
@@ -38,9 +40,8 @@ export default function Contact() {
             </div>
             <h3 className="font-heading font-bold text-lg text-on-surface">Foundation HQ</h3>
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              Brown's Heart Care Foundation<br />
-              124 Heart Health Boulevard, Suite 400<br />
-              Medical District, City 10021
+              {settings.orgName}<br />
+              {settings.contactInfo.address}
             </p>
           </div>
 
@@ -50,8 +51,7 @@ export default function Contact() {
             </div>
             <h3 className="font-heading font-bold text-lg text-on-surface">Phone & Hotline</h3>
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              Main Office: +1 (800) 555-HEART (4327)<br />
-              Emergency Care Helpline: +1 (800) 999-CARE<br />
+              Main Line: {settings.contactInfo.phone}<br />
               Mon - Fri: 8:00 AM - 6:00 PM
             </p>
           </div>
@@ -62,12 +62,12 @@ export default function Contact() {
             </div>
             <h3 className="font-heading font-bold text-lg text-on-surface">Email Inquiries</h3>
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              General: info@brownsheartcare.org<br />
-              Donations & Receipts: donor@brownsheartcare.org<br />
-              Media & PR: press@brownsheartcare.org
+              General: {settings.contactInfo.email}<br />
+              Volunteers: volunteer@brownheartcare.org
             </p>
           </div>
         </div>
+
 
         {/* Contact Form */}
         <div className="lg:col-span-2 bg-surface-container-lowest p-8 rounded-3xl shadow-card border border-surface-variant">

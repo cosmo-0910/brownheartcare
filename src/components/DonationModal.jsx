@@ -175,7 +175,7 @@ export default function DonationModal({ isOpen, onClose }) {
 
                 <div>
                   <label className="block text-xs font-semibold text-on-surface mb-1">Payment Method</label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2 mb-3">
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, paymentMethod: 'card' })}
@@ -186,22 +186,35 @@ export default function DonationModal({ isOpen, onClose }) {
                       }`}
                     >
                       <span className="material-symbols-outlined text-base">credit_card</span>
-                      <span>Credit Card</span>
+                      <span>Credit / Debit Card</span>
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, paymentMethod: 'paypal' })}
+                      onClick={() => setFormData({ ...formData, paymentMethod: 'transfer' })}
                       className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
-                        formData.paymentMethod === 'paypal'
+                        formData.paymentMethod === 'transfer'
                           ? 'border-primary bg-primary/5 text-primary'
                           : 'border-outline-variant/60 text-secondary'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-base">account_balance_wallet</span>
-                      <span>PayPal / Wallet</span>
+                      <span className="material-symbols-outlined text-base">account_balance</span>
+                      <span>Direct Bank Transfer</span>
                     </button>
                   </div>
+
+                  {formData.paymentMethod === 'transfer' && (
+                    <div className="bg-primary/5 p-4 rounded-xl border border-primary/20 space-y-1.5 text-xs text-on-surface">
+                      <p className="font-bold text-primary text-xs uppercase tracking-wider">Official Lotus Bank Account</p>
+                      <p><strong>Bank Name:</strong> Lotus Bank</p>
+                      <p><strong>Account Name:</strong> Aina Esther Oluwatoyin</p>
+                      <p><strong>Account Number:</strong> <span className="font-mono font-bold text-sm text-primary bg-white px-2 py-0.5 rounded border border-primary/30">1009761198</span></p>
+                      <p className="text-[11px] text-secondary italic pt-1">
+                        Send proof of transfer to <strong>brownheartcare@gmail.com</strong>
+                      </p>
+                    </div>
+                  )}
                 </div>
+
 
                 <div className="pt-2 flex items-center gap-2">
                   <button

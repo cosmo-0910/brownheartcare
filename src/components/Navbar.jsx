@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useSiteSettings } from '../context/SiteSettingsContext';
 
 export default function Navbar({ currentPage, setCurrentPage, openVolunteerModal }) {
+  const { settings } = useSiteSettings();
   const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -23,18 +25,32 @@ export default function Navbar({ currentPage, setCurrentPage, openVolunteerModal
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm py-3 transition-all">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm py-2.5 transition-all">
       <div className="max-w-[1280px] mx-auto px-4 md:px-8 flex justify-between items-center h-14">
         {/* Brand Logo */}
         <div 
           onClick={() => navTo('home-outreach')}
-          className="flex items-center gap-2 cursor-pointer"
+          className="flex items-center gap-3 cursor-pointer group"
         >
-          <span className="material-symbols-outlined text-[#b0004a] text-3xl font-bold">favorite</span>
-          <span className="font-heading font-bold text-xl text-[#b0004a] tracking-tight">
-            Brown's Heart Care
-          </span>
+          <img 
+            src={settings.logo || '/logo.png'} 
+            alt={settings.orgName} 
+            className="h-10 w-auto max-w-[140px] object-contain transition-transform group-hover:scale-105"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.style.display = 'none';
+            }}
+          />
+          <div className="flex flex-col">
+            <span className="font-heading font-bold text-lg md:text-xl text-[#b0004a] tracking-tight leading-none">
+              {settings.orgName}
+            </span>
+            <span className="text-[10px] text-gray-500 font-medium italic mt-0.5 hidden sm:block">
+              {settings.tagline}
+            </span>
+          </div>
         </div>
+
 
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">

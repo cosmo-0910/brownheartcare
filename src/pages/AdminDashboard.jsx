@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useSiteSettings } from '../context/SiteSettingsContext';
 
 export default function AdminDashboard({ setCurrentPage, donations, volunteers, events, highlights, onUpdateEvents, onUpdateHighlights }) {
+  const { settings, updateSettings, updateStats, updateSocialLinks, updateContactInfo, addStoryEntry, updateStoryEntry, deleteStoryEntry } = useSiteSettings();
+
   const [passcode, setPasscode] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [passError, setPassError] = useState(false);
@@ -12,18 +15,41 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
   const [selectedDonor, setSelectedDonor] = useState(null);
   const [invitationMessage, setInvitationMessage] = useState('');
   const [invitationSent, setInvitationSent] = useState(false);
+  const [showLivePreview, setShowLivePreview] = useState(false);
 
-  // New Content Forms
+  // Content Manager Forms State
+  const [statsForm, setStatsForm] = useState(settings.stats);
+  const [socialsForm, setSocialsForm] = useState(settings.socialLinks);
+  const [contactForm, setContactForm] = useState(settings.contactInfo);
+  const [brandingForm, setBrandingForm] = useState({
+    orgName: settings.orgName,
+    tagline: settings.tagline,
+    heroTitle: settings.heroTitle,
+    heroSubtitle: settings.heroSubtitle,
+    logo: settings.logo
+  });
+
+  // Story Form State
+  const [newStory, setNewStory] = useState({
+    year: new Date().getFullYear().toString(),
+    title: '',
+    description: '',
+    image: ''
+  });
+
+  // New Event Form State
   const [newEvent, setNewEvent] = useState({
     title: '',
-    typeLabel: 'Health Walk',
+    typeLabel: 'Community Outreach',
     date: '',
     location: '',
     desc: '',
     img: '',
+    storyRecord: '',
     featured: true
   });
 
+  // New Media Highlight Form State
   const [newHighlight, setNewHighlight] = useState({
     title: '',
     category: 'medical',
@@ -47,6 +73,75 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
     }
   };
 
+  const handleSaveBranding = (e) => {
+    e.preventDefault();
+    updateSettings(brandingForm);
+    alert('Branding and tagline saved to live site!');
+  };
+
+  const handleSaveStats = (e) => {
+    e.preventDefault();
+    updateStats(statsForm);
+    alert('Impact statistics updated live on front-end!');
+  };
+
+  const handleSaveSocials = (e) => {
+    e.preventDefault();
+    updateSocialLinks(socialsForm);
+    alert('Social media links updated live across header, footer, and contact page!');
+  };
+
+  const handleSaveContact = (e) => {
+    e.preventDefault();
+    updateContactInfo(contactForm);
+    alert('Contact information updated live!');
+  };
+
+  const handleAddStory = (e) => {
+    e.preventDefault();
+    if (!newStory.title) return;
+    addStoryEntry({
+      id: `story-${Date.now()}`,
+      ...newStory,
+      image: newStory.image || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80'
+    });
+    setNewStory({ year: new Date().getFullYear().toString(), title: '', description: '', image: '' });
+    alert('New Story Record added to Our Story timeline!');
+  };
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBrandingForm(prev => ({ ...prev, logo: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEventImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewEvent(prev => ({ ...prev, img: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleHighlightVideoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewHighlight(prev => ({ ...prev, videoUrl: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleToggleEventFeatured = (id) => {
     const updated = events.map(e => e.id === id ? { ...e, featured: !e.featured } : e);
     onUpdateEvents(updated);
@@ -63,11 +158,11 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
     const item = {
       id: Date.now(),
       ...newEvent,
-      img: newEvent.img || 'https://lh3.googleusercontent.com/aida-public/AB6AXuB1Nbhi6ZZKs6DuolUKw6ihTzq8f644ai4kLMv2Y25bfkh89EHP7Aem9_rNi_F5m11dQlHVRXODZd4RAw7hy2IwP6PiihaTF5JxZcaR3--mOA6DsWTD_dDC6ZISr7LXOSWub3X_SXenXndTwWQ2qUEBdrRaXmrTjT2Qks1V_M4jS5hy4uZGcTZZLWt6a3SHIbL3T2g5sk2BK7dizK2YtW2Jbou7FxLyrLZrj_Wogi-qzh94dJBACKE6YA'
+      img: newEvent.img || 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80'
     };
     onUpdateEvents([item, ...events]);
-    setNewEvent({ title: '', typeLabel: 'Health Walk', date: '', location: '', desc: '', img: '', featured: true });
-    alert('New event published to live site!');
+    setNewEvent({ title: '', typeLabel: 'Community Outreach', date: '', location: '', desc: '', img: '', storyRecord: '', featured: true });
+    alert('New outreach event published to live site!');
   };
 
   const handleAddHighlight = (e) => {
@@ -76,11 +171,11 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
     const item = {
       id: Date.now(),
       ...newHighlight,
-      videoUrl: newHighlight.videoUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBll0-lwQpXVroVoV4bAnp6Ygx7qxW2mZoZs_Ou829wSXmwp8Bz-1_Ks568WqOr233bGZVvTKWEZGs6qwN66bWJhJIOllFH_2G25ph3oTyNn0U3JwOV3gf2RWxg5dIl_dFPs29b2YG4pCP-_L44JLVMjVEwLqLDbUMeYzxYh6Dt4cW2dWj2e9ABQUshS9jbppDpi1e_gvTfANEj5wBHZGvxVA1LHFKBF8Wl29iZB3Jq7uNDHSVDD_2xRA'
+      videoUrl: newHighlight.videoUrl || 'https://www.w3schools.com/html/mov_bbb.mp4'
     };
     onUpdateHighlights([item, ...highlights]);
     setNewHighlight({ title: '', category: 'medical', categoryLabel: 'Medical Outreach', duration: '04:30', date: 'Aug 2024', views: '1.2K views', desc: '', videoUrl: '', featured: true });
-    alert('New media highlight added to live site!');
+    alert('New media highlight published!');
   };
 
   const handleSendInvitation = (e) => {
@@ -92,6 +187,10 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
       alert(`Outreach invitation sent to ${selectedVolunteer.email}!`);
     }, 1200);
   };
+
+  // Combine roster volunteers with local storage saved ones
+  const localVols = JSON.parse(localStorage.getItem('bhc_volunteers_roster') || '[]');
+  const allVolunteers = [...localVols, ...volunteers.filter(v => !localVols.some(lv => lv.id === v.id || lv.email === v.email))];
 
   const totalNaira = donations.filter(d => d.currency === 'NGN').reduce((sum, d) => sum + Number(d.amount), 0);
   const totalUSD = donations.filter(d => d.currency === 'USD').reduce((sum, d) => sum + Number(d.amount), 0);
@@ -106,8 +205,8 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
           </div>
 
           <div>
-            <h2 className="font-heading font-bold text-2xl text-gray-900">Executive Passcode Required</h2>
-            <p className="text-xs text-gray-500 mt-1">Enter your executive access passcode to unlock the Administration Control Center.</p>
+            <h2 className="font-heading font-bold text-2xl text-gray-900">Executive Access Required</h2>
+            <p className="text-xs text-gray-500 mt-1">Enter your executive passcode to unlock the Administration & Content Manager Portal.</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
@@ -153,13 +252,22 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
       <div className="bg-[#1a1c1c] text-white py-4 px-6 shadow-md">
         <div className="max-w-[1280px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
-            <span className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
-            <h1 className="font-heading font-bold text-lg text-white">
-              Executive Administration Dashboard <span className="text-xs bg-[#b0004a] text-white px-2 py-0.5 rounded font-mono ml-2">/bhcareexec</span>
-            </h1>
+            <img src={settings.logo || '/logo.png'} alt="Logo" className="h-8 w-auto object-contain bg-white/10 p-1 rounded" onError={(e) => e.target.style.display = 'none'} />
+            <div>
+              <h1 className="font-heading font-bold text-lg text-white leading-none">
+                Executive Administration Dashboard
+              </h1>
+              <span className="text-[10px] text-gray-400 italic">"{settings.tagline}"</span>
+            </div>
           </div>
           <div className="flex items-center gap-3 text-xs">
-            <span className="text-gray-400">Authenticated: Executive Director</span>
+            <button
+              onClick={() => setShowLivePreview(true)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-full font-semibold transition-colors flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-sm">visibility</span>
+              <span>Live Site Preview</span>
+            </button>
             <button
               onClick={() => {
                 setAuthenticated(false);
@@ -178,16 +286,17 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
         {/* Navigation Tabs */}
         <div className="flex flex-wrap gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-200">
           {[
-            { id: 'overview', label: 'Overview & Metrics', icon: 'dashboard' },
+            { id: 'overview', label: 'Overview Metrics', icon: 'dashboard' },
+            { id: 'volunteers', label: `Volunteer Roster (${allVolunteers.length})`, icon: 'groups' },
+            { id: 'site-content', label: 'Site Text & Stats Manager', icon: 'edit_note' },
+            { id: 'events-cms', label: 'Outreach Events', icon: 'event' },
+            { id: 'highlights-cms', label: 'Media & Video Uploads', icon: 'video_library' },
             { id: 'donations', label: `Donations (${donations.length})`, icon: 'payments' },
-            { id: 'volunteers', label: `Volunteers (${volunteers.length})`, icon: 'groups' },
-            { id: 'events-cms', label: 'Events Manager', icon: 'event' },
-            { id: 'highlights-cms', label: 'Media Highlights CMS', icon: 'video_library' },
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === tab.id
                   ? 'bg-[#b0004a] text-white shadow-sm'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -205,6 +314,12 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
             {/* Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-2">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Lives Touched (Front-end)</span>
+                <p className="font-heading font-extrabold text-2xl text-[#b0004a]">{settings.stats.livesTouched}</p>
+                <span className="text-[11px] text-gray-500 font-medium">Editable in Site Content Manager</span>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-2">
                 <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Raised (NGN)</span>
                 <p className="font-heading font-extrabold text-2xl text-[#b0004a]">₦{totalNaira.toLocaleString()}</p>
                 <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
@@ -213,36 +328,62 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
               </div>
 
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-2">
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Raised (USD)</span>
-                <p className="font-heading font-extrabold text-2xl text-[#b0004a]">${totalUSD.toLocaleString()}</p>
-                <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-                  <span className="material-symbols-outlined text-sm">trending_up</span> Stripe & International
-                </span>
-              </div>
-
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-2">
                 <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Registered Volunteers</span>
-                <p className="font-heading font-extrabold text-2xl text-gray-900">{volunteers.length}</p>
-                <span className="text-[11px] text-gray-500 font-medium">Click row for full profile & inviter</span>
+                <p className="font-heading font-extrabold text-2xl text-gray-900">{allVolunteers.length}</p>
+                <span className="text-[11px] text-gray-500 font-medium">Includes photos & detailed addresses</span>
               </div>
 
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-2">
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Active Events</span>
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Published Events</span>
                 <p className="font-heading font-extrabold text-2xl text-gray-900">{events.length}</p>
-                <span className="text-[11px] text-gray-500 font-medium">Published on Events Page</span>
+                <span className="text-[11px] text-gray-500 font-medium">Outreach history & upcoming drives</span>
               </div>
             </div>
 
             {/* Previews */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Recent Donations */}
+              {/* Recent Volunteers Preview */}
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-heading font-bold text-base text-gray-900">Recent Transactions (Click row for receipt)</h3>
+                  <h3 className="font-heading font-bold text-base text-gray-900">Recent Volunteers (Click for Full Profile)</h3>
+                  <button onClick={() => setActiveTab('volunteers')} className="text-xs text-[#b0004a] font-bold hover:underline">View All</button>
+                </div>
+                <div className="space-y-3">
+                  {allVolunteers.slice(0, 5).map((v, i) => (
+                    <div 
+                      key={i} 
+                      onClick={() => setSelectedVolunteer(v)}
+                      className="flex justify-between items-center p-3.5 bg-gray-50 rounded-xl text-xs cursor-pointer hover:bg-[#ffd9de]/20 border border-transparent hover:border-[#b0004a] transition-all"
+                    >
+                      <div className="flex items-center gap-3">
+                        {v.photo_url || v.photoUrl ? (
+                          <img src={v.photo_url || v.photoUrl} alt={v.full_name || v.name} className="w-10 h-10 rounded-full object-cover border border-[#b0004a]" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-[#ffd9de] text-[#b0004a] flex items-center justify-center font-bold">
+                            {(v.full_name || v.name || 'V').charAt(0)}
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-bold text-gray-900">{v.full_name || v.name}</p>
+                          <p className="text-[11px] text-gray-500">{v.occupation || 'Volunteer'} • {v.city || 'Lagos'}, {v.state || 'NG'}</p>
+                        </div>
+                      </div>
+                      <span className="bg-[#ffd9de] text-[#b0004a] px-2.5 py-1 rounded-full text-[10px] font-bold">
+                        Full Details & Photo
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent Transactions */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-heading font-bold text-base text-gray-900">Recent Transactions</h3>
                   <button onClick={() => setActiveTab('donations')} className="text-xs text-[#b0004a] font-bold hover:underline">View All</button>
                 </div>
                 <div className="space-y-3">
-                  {donations.slice(0, 4).map((d, i) => (
+                  {donations.slice(0, 5).map((d, i) => (
                     <div 
                       key={i} 
                       onClick={() => setSelectedDonor(d)}
@@ -259,143 +400,366 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                   ))}
                 </div>
               </div>
+            </div>
+          </div>
+        )}
 
-              {/* Recent Volunteers */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-heading font-bold text-base text-gray-900">Registered Volunteers (Click for full profile)</h3>
-                  <button onClick={() => setActiveTab('volunteers')} className="text-xs text-[#b0004a] font-bold hover:underline">View All</button>
-                </div>
-                <div className="space-y-3">
-                  {volunteers.slice(0, 4).map((v, i) => (
-                    <div 
-                      key={i} 
-                      onClick={() => setSelectedVolunteer(v)}
-                      className="flex justify-between items-center p-3.5 bg-gray-50 rounded-xl text-xs cursor-pointer hover:bg-[#ffd9de]/20 border border-transparent hover:border-[#b0004a] transition-all"
-                    >
+        {/* VOLUNTEERS TAB WITH FULL DETAILS & UPLOADED PHOTOS */}
+        {activeTab === 'volunteers' && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 animate-fadeIn">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-4">
+              <div>
+                <h3 className="font-heading font-bold text-xl text-gray-900">Volunteer Submissions Roster ({allVolunteers.length})</h3>
+                <p className="text-xs text-gray-500">Every volunteer's photo, home address, living profession, qualifications, and emergency contact details.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {allVolunteers.map((vol, idx) => (
+                <div 
+                  key={idx} 
+                  onClick={() => setSelectedVolunteer(vol)}
+                  className="bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-sm hover:border-[#b0004a] hover:shadow-md transition-all cursor-pointer space-y-4 flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      {vol.photo_url || vol.photoUrl ? (
+                        <img 
+                          src={vol.photo_url || vol.photoUrl} 
+                          alt={vol.full_name || vol.name} 
+                          className="w-14 h-14 rounded-full object-cover border-2 border-[#b0004a] shadow-sm shrink-0" 
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded-full bg-[#ffd9de] text-[#b0004a] flex items-center justify-center font-bold text-xl shrink-0">
+                          {(vol.full_name || vol.name || 'V').charAt(0)}
+                        </div>
+                      )}
                       <div>
-                        <p className="font-bold text-gray-900">{v.name}</p>
-                        <p className="text-[11px] text-gray-500">{v.email} • {v.phone}</p>
+                        <h4 className="font-heading font-bold text-base text-gray-900">{vol.full_name || vol.name}</h4>
+                        <p className="text-xs font-semibold text-[#b0004a]">{vol.occupation || 'Volunteer'}</p>
+                        <p className="text-[11px] text-gray-500">{vol.email}</p>
                       </div>
-                      <span className="bg-[#ffd9de] text-[#b0004a] px-2.5 py-1 rounded-full text-[10px] font-bold">
-                        {v.interests ? v.interests[0] : 'Medical Outreach'}
-                      </span>
+                    </div>
+
+                    <div className="bg-white p-3 rounded-xl border border-gray-100 space-y-1.5 text-xs">
+                      <div className="flex items-start gap-1.5 text-gray-700">
+                        <span className="material-symbols-outlined text-sm text-[#b0004a] shrink-0 mt-0.5">home</span>
+                        <span className="line-clamp-2">{vol.detailed_address || `${vol.street || ''}, ${vol.city || ''}, ${vol.state || ''}`}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-gray-700">
+                        <span className="material-symbols-outlined text-sm text-[#b0004a] shrink-0">call</span>
+                        <span>{vol.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-gray-700">
+                        <span className="material-symbols-outlined text-sm text-[#b0004a] shrink-0">badge</span>
+                        <span className="truncate">{vol.medical_qualifications || vol.qualifications || 'RN Nurse / Skills'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button className="w-full py-2 bg-[#b0004a] text-white rounded-xl text-xs font-bold hover:bg-[#90003b] transition-colors flex items-center justify-center gap-1">
+                    <span>View Full Profile & Send Invite</span>
+                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* SITE TEXT & STATS MANAGER TAB */}
+        {activeTab === 'site-content' && (
+          <div className="space-y-8 animate-fadeIn">
+            {/* Stats Editor */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+              <div>
+                <h3 className="font-heading font-bold text-xl text-gray-900">Front Page Impact Numbers</h3>
+                <p className="text-xs text-gray-500">Edit any statistical counter on the front page (e.g. change 5,000 to 4,000 or 10,000).</p>
+              </div>
+
+              <form onSubmit={handleSaveStats} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Lives Touched Counter</label>
+                  <input
+                    type="text"
+                    value={statsForm.livesTouched}
+                    onChange={(e) => setStatsForm({ ...statsForm, livesTouched: e.target.value })}
+                    className="w-full bg-[#eee] p-3 rounded-xl border border-transparent font-bold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Outreach Events Counter</label>
+                  <input
+                    type="text"
+                    value={statsForm.outreachEvents}
+                    onChange={(e) => setStatsForm({ ...statsForm, outreachEvents: e.target.value })}
+                    className="w-full bg-[#eee] p-3 rounded-xl border border-transparent font-bold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Active Volunteers Counter</label>
+                  <input
+                    type="text"
+                    value={statsForm.activeVolunteers}
+                    onChange={(e) => setStatsForm({ ...statsForm, activeVolunteers: e.target.value })}
+                    className="w-full bg-[#eee] p-3 rounded-xl border border-transparent font-bold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Aid Distributed Packages</label>
+                  <input
+                    type="text"
+                    value={statsForm.aidDistributed}
+                    onChange={(e) => setStatsForm({ ...statsForm, aidDistributed: e.target.value })}
+                    className="w-full bg-[#eee] p-3 rounded-xl border border-transparent font-bold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div className="sm:col-span-2 lg:col-span-4 flex justify-end">
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-[#b0004a] text-white rounded-full text-xs font-bold hover:bg-[#90003b] shadow-sm transition-all"
+                  >
+                    Save Impact Stats Live
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Organization Branding & Tagline Editor */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+              <div>
+                <h3 className="font-heading font-bold text-xl text-gray-900">Logo, Name & Tagline Editor</h3>
+                <p className="text-xs text-gray-500">Update logo file, foundation tagline, and homepage hero headline text.</p>
+              </div>
+
+              <form onSubmit={handleSaveBranding} className="space-y-4 text-xs">
+                <div className="p-4 bg-gray-50 rounded-xl border border-dashed border-gray-300 flex flex-col sm:flex-row items-center gap-4">
+                  <img src={brandingForm.logo || '/logo.png'} alt="Preview logo" className="h-12 w-auto object-contain" />
+                  <div className="space-y-1">
+                    <label className="block font-bold text-gray-700">Upload New Official Logo Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="text-xs text-gray-600"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Organization Name</label>
+                    <input
+                      type="text"
+                      value={brandingForm.orgName}
+                      onChange={(e) => setBrandingForm({ ...brandingForm, orgName: e.target.value })}
+                      className="w-full bg-[#eee] p-3 rounded-xl border border-transparent font-bold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Official Tagline</label>
+                    <input
+                      type="text"
+                      value={brandingForm.tagline}
+                      onChange={(e) => setBrandingForm({ ...brandingForm, tagline: e.target.value })}
+                      className="w-full bg-[#eee] p-3 rounded-xl border border-transparent font-bold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Homepage Hero Headline</label>
+                  <input
+                    type="text"
+                    value={brandingForm.heroTitle}
+                    onChange={(e) => setBrandingForm({ ...brandingForm, heroTitle: e.target.value })}
+                    className="w-full bg-[#eee] p-3 rounded-xl border border-transparent font-bold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Homepage Hero Subtitle</label>
+                  <textarea
+                    rows={2}
+                    value={brandingForm.heroSubtitle}
+                    onChange={(e) => setBrandingForm({ ...brandingForm, heroSubtitle: e.target.value })}
+                    className="w-full bg-[#eee] p-3 rounded-xl border border-transparent font-medium text-gray-900 focus:bg-white focus:border-[#b0004a] resize-none"
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-[#b0004a] text-white rounded-full text-xs font-bold hover:bg-[#90003b] shadow-sm transition-all"
+                  >
+                    Save Branding Live
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Social Media Links Manager */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+              <div>
+                <h3 className="font-heading font-bold text-xl text-gray-900">Social Media Handles & Links</h3>
+                <p className="text-xs text-gray-500">Update social media links dynamically across navbar, footer, and contact page.</p>
+              </div>
+
+              <form onSubmit={handleSaveSocials} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Instagram URL</label>
+                  <input
+                    type="text"
+                    value={socialsForm.instagram}
+                    onChange={(e) => setSocialsForm({ ...socialsForm, instagram: e.target.value })}
+                    className="w-full bg-[#eee] p-3 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Facebook URL</label>
+                  <input
+                    type="text"
+                    value={socialsForm.facebook}
+                    onChange={(e) => setSocialsForm({ ...socialsForm, facebook: e.target.value })}
+                    className="w-full bg-[#eee] p-3 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">YouTube URL</label>
+                  <input
+                    type="text"
+                    value={socialsForm.youtube}
+                    onChange={(e) => setSocialsForm({ ...socialsForm, youtube: e.target.value })}
+                    className="w-full bg-[#eee] p-3 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">LinkedIn URL</label>
+                  <input
+                    type="text"
+                    value={socialsForm.linkedin}
+                    onChange={(e) => setSocialsForm({ ...socialsForm, linkedin: e.target.value })}
+                    className="w-full bg-[#eee] p-3 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Twitter / X URL</label>
+                  <input
+                    type="text"
+                    value={socialsForm.twitter}
+                    onChange={(e) => setSocialsForm({ ...socialsForm, twitter: e.target.value })}
+                    className="w-full bg-[#eee] p-3 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">WhatsApp Support Link</label>
+                  <input
+                    type="text"
+                    value={socialsForm.whatsapp}
+                    onChange={(e) => setSocialsForm({ ...socialsForm, whatsapp: e.target.value })}
+                    className="w-full bg-[#eee] p-3 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div className="sm:col-span-2 lg:col-span-3 flex justify-end">
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-[#b0004a] text-white rounded-full text-xs font-bold hover:bg-[#90003b] shadow-sm transition-all"
+                  >
+                    Save Social Media Links Live
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Our Story Timeline Manager */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
+              <div>
+                <h3 className="font-heading font-bold text-xl text-gray-900">Our Story & Outreach Timeline Records</h3>
+                <p className="text-xs text-gray-500">Add or edit history records behind each outreach event.</p>
+              </div>
+
+              {/* Add Story Form */}
+              <form onSubmit={handleAddStory} className="bg-gray-50 p-4 rounded-2xl border border-gray-200 space-y-3 text-xs">
+                <h4 className="font-bold text-gray-800">Add New Outreach Timeline Record</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block font-semibold text-gray-700 mb-1">Year</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="2024"
+                      value={newStory.year}
+                      onChange={(e) => setNewStory({ ...newStory, year: e.target.value })}
+                      className="w-full bg-white p-2.5 rounded-xl border border-gray-200"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-gray-700 mb-1">Outreach Record Title</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Free Health Screening for 1,500 Rural Families"
+                      value={newStory.title}
+                      onChange={(e) => setNewStory({ ...newStory, title: e.target.value })}
+                      className="w-full bg-white p-2.5 rounded-xl border border-gray-200"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Full Story & Impact Record Description</label>
+                  <textarea
+                    rows={3}
+                    required
+                    placeholder="Write detailed background story of this outreach..."
+                    value={newStory.description}
+                    onChange={(e) => setNewStory({ ...newStory, description: e.target.value })}
+                    className="w-full bg-white p-2.5 rounded-xl border border-gray-200 resize-none"
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 bg-[#b0004a] text-white rounded-full font-bold text-xs hover:bg-[#90003b]"
+                  >
+                    Add Story Record to Website
+                  </button>
+                </div>
+              </form>
+
+              {/* Active Story Records List */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-xs text-gray-700 uppercase tracking-wider">Current Timeline Stories ({settings.ourStoryEntries.length})</h4>
+                <div className="space-y-3">
+                  {settings.ourStoryEntries.map((st) => (
+                    <div key={st.id} className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-start gap-4 text-xs">
+                      <div className="space-y-1">
+                        <span className="bg-[#b0004a] text-white px-2 py-0.5 rounded font-bold text-[10px]">{st.year}</span>
+                        <h5 className="font-heading font-bold text-sm text-gray-900">{st.title}</h5>
+                        <p className="text-gray-600 leading-relaxed">{st.description}</p>
+                      </div>
+                      <button
+                        onClick={() => deleteStoryEntry(st.id)}
+                        className="text-red-600 font-bold hover:underline shrink-0 text-xs"
+                      >
+                        Delete
+                      </button>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* DONATIONS TAB */}
-        {activeTab === 'donations' && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 animate-fadeIn">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="font-heading font-bold text-xl text-gray-900">Donation Transactions & Receipts</h3>
-                <p className="text-xs text-gray-500">Click any transaction row to inspect full receipt details & tax audit code.</p>
-              </div>
-              <div className="flex gap-2 text-xs font-semibold">
-                <span className="bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full">
-                  Total: ₦{totalNaira.toLocaleString()} + ${totalUSD.toLocaleString()}
-                </span>
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="bg-gray-100 text-gray-700 font-bold border-b border-gray-200">
-                    <th className="p-3.5">Donor Name</th>
-                    <th className="p-3.5">Email</th>
-                    <th className="p-3.5">Amount</th>
-                    <th className="p-3.5">Payment Method</th>
-                    <th className="p-3.5">Date</th>
-                    <th className="p-3.5">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {donations.map((d, i) => (
-                    <tr 
-                      key={i} 
-                      onClick={() => setSelectedDonor(d)}
-                      className="hover:bg-[#ffd9de]/10 cursor-pointer transition-colors"
-                    >
-                      <td className="p-3.5 font-bold text-gray-900">{d.name}</td>
-                      <td className="p-3.5 text-gray-600">{d.email}</td>
-                      <td className="p-3.5 font-heading font-bold text-[#b0004a]">
-                        {d.currency === 'NGN' ? `₦${Number(d.amount).toLocaleString()}` : `$${d.amount}`}
-                      </td>
-                      <td className="p-3.5">
-                        <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded text-[11px] font-semibold">
-                          {d.method || 'Credit Card / Stripe'}
-                        </span>
-                      </td>
-                      <td className="p-3.5 text-gray-500">{d.date}</td>
-                      <td className="p-3.5">
-                        <button className="text-[#b0004a] font-bold hover:underline">View Receipt</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* VOLUNTEERS TAB */}
-        {activeTab === 'volunteers' && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 animate-fadeIn">
-            <div>
-              <h3 className="font-heading font-bold text-xl text-gray-900">Volunteer Submissions Registry</h3>
-              <p className="text-xs text-gray-500">Click any volunteer row to view full address, schedule, credentials, and send outreach invitations.</p>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="bg-gray-100 text-gray-700 font-bold border-b border-gray-200">
-                    <th className="p-3.5">Volunteer Name</th>
-                    <th className="p-3.5">Contact Details</th>
-                    <th className="p-3.5">Location</th>
-                    <th className="p-3.5">Interests / Roles</th>
-                    <th className="p-3.5">Schedule</th>
-                    <th className="p-3.5">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {volunteers.map((v, i) => (
-                    <tr 
-                      key={i} 
-                      onClick={() => setSelectedVolunteer(v)}
-                      className="hover:bg-[#ffd9de]/10 cursor-pointer transition-colors"
-                    >
-                      <td className="p-3.5 font-bold text-gray-900">{v.name}</td>
-                      <td className="p-3.5 text-gray-600">
-                        <p>{v.email}</p>
-                        <p className="text-[11px] text-gray-400">{v.phone}</p>
-                      </td>
-                      <td className="p-3.5 text-gray-600">{v.city || 'Metropolis'}, {v.state || 'NY'}</td>
-                      <td className="p-3.5">
-                        <div className="flex flex-wrap gap-1">
-                          {(v.interests || ['Medical Outreach']).map((int, k) => (
-                            <span key={k} className="bg-[#ffd9de] text-[#b0004a] px-2 py-0.5 rounded text-[10px] font-bold">
-                              {int}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="p-3.5 text-gray-600 capitalize">{v.availability || 'Weekends'}</td>
-                      <td className="p-3.5">
-                        <button className="bg-[#b0004a] text-white px-3 py-1 rounded-full text-[11px] font-bold hover:bg-[#90003b]">
-                          Full Profile & Invite
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           </div>
         )}
@@ -412,7 +776,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Free Pediatric Heart Screening Day"
+                    placeholder="e.g. Free Health Screening Day"
                     value={newEvent.title}
                     onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                     className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
@@ -427,10 +791,9 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                       onChange={(e) => setNewEvent({ ...newEvent, typeLabel: e.target.value })}
                       className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
                     >
-                      <option value="Health Walk">Health Walk</option>
-                      <option value="Food Drive">Food Drive</option>
+                      <option value="Community Outreach">Community Outreach</option>
+                      <option value="Food & Aid Drive">Food & Aid Drive</option>
                       <option value="Medical Screening">Medical Screening</option>
-                      <option value="Surgical Clinic">Surgical Clinic</option>
                     </select>
                   </div>
                   <div>
@@ -451,10 +814,20 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                   <input
                     type="text"
                     required
-                    placeholder="City Central Pavilion"
+                    placeholder="Community Center, Lagos"
                     value={newEvent.location}
                     onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
                     className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Upload Event Image</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleEventImageUpload}
+                    className="text-xs text-gray-600 w-full"
                   />
                 </div>
 
@@ -474,7 +847,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                   type="submit"
                   className="w-full py-3 rounded-full bg-[#b0004a] text-white font-bold text-xs shadow-md hover:bg-[#90003b] transition-all"
                 >
-                  Publish Event to Website
+                  Publish Event to Live Website
                 </button>
               </form>
             </div>
@@ -492,7 +865,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                         </span>
                         {evt.featured && (
                           <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">
-                            Featured on Front-End
+                            Featured
                           </span>
                         )}
                       </div>
@@ -516,19 +889,19 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
           </div>
         )}
 
-        {/* HIGHLIGHTS CMS TAB */}
+        {/* MEDIA & VIDEO UPLOAD CMS TAB */}
         {activeTab === 'highlights-cms' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fadeIn">
             {/* Add Media Form */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
-              <h3 className="font-heading font-bold text-lg text-gray-900">Add Homepage & Events Highlight</h3>
+              <h3 className="font-heading font-bold text-lg text-gray-900">Upload Video & Media Showcase</h3>
               <form onSubmit={handleAddHighlight} className="space-y-3 text-xs">
                 <div>
                   <label className="block font-semibold text-gray-700 mb-1">Highlight Title</label>
                   <input
                     type="text"
                     required
-                    placeholder="2024 Pediatric Surgery Documentary"
+                    placeholder="2024 Rural Outreach Documentary"
                     value={newHighlight.title}
                     onChange={(e) => setNewHighlight({ ...newHighlight, title: e.target.value })}
                     className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
@@ -544,8 +917,8 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                       className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
                     >
                       <option value="medical">Medical Outreach</option>
-                      <option value="surgery">Surgical Relief</option>
-                      <option value="food">Nutritional Security</option>
+                      <option value="food">Nutritional Relief</option>
+                      <option value="community">Community Aid</option>
                     </select>
                   </div>
                   <div>
@@ -561,13 +934,20 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Video URL (YouTube / Instagram / MP4)</label>
+                  <label className="block font-semibold text-gray-700 mb-1">Upload Direct Video File (MP4/WebM)</label>
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleHighlightVideoUpload}
+                    className="text-xs text-gray-600 w-full mb-1"
+                  />
+                  <p className="text-[10px] text-gray-400">Or enter external video URL below:</p>
                   <input
                     type="text"
                     placeholder="https://youtube.com/watch?v=..."
                     value={newHighlight.videoUrl}
                     onChange={(e) => setNewHighlight({ ...newHighlight, videoUrl: e.target.value })}
-                    className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
+                    className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a] mt-1"
                   />
                 </div>
 
@@ -575,7 +955,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                   <label className="block font-semibold text-gray-700 mb-1">Description</label>
                   <textarea
                     rows={3}
-                    placeholder="Short summary of this program highlight..."
+                    placeholder="Short summary of this video highlight..."
                     value={newHighlight.desc}
                     onChange={(e) => setNewHighlight({ ...newHighlight, desc: e.target.value })}
                     className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a] resize-none"
@@ -586,7 +966,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                   type="submit"
                   className="w-full py-3 rounded-full bg-[#b0004a] text-white font-bold text-xs shadow-md hover:bg-[#90003b] transition-all"
                 >
-                  Save Highlight to Front-End
+                  Save Highlight to Live Site
                 </button>
               </form>
             </div>
@@ -627,12 +1007,134 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
             </div>
           </div>
         )}
+
+        {/* DONATIONS TAB */}
+        {activeTab === 'donations' && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 animate-fadeIn">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-heading font-bold text-xl text-gray-900">Donation Transactions & Receipts</h3>
+                <p className="text-xs text-gray-500">Click any transaction row to inspect full receipt details.</p>
+              </div>
+              <div className="flex gap-2 text-xs font-semibold">
+                <span className="bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full">
+                  Total: ₦{totalNaira.toLocaleString()} + ${totalUSD.toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-gray-100 text-gray-700 font-bold border-b border-gray-200">
+                    <th className="p-3.5">Donor Name</th>
+                    <th className="p-3.5">Email</th>
+                    <th className="p-3.5">Amount</th>
+                    <th className="p-3.5">Payment Method</th>
+                    <th className="p-3.5">Date</th>
+                    <th className="p-3.5">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {donations.map((d, i) => (
+                    <tr 
+                      key={i} 
+                      onClick={() => setSelectedDonor(d)}
+                      className="hover:bg-[#ffd9de]/10 cursor-pointer transition-colors"
+                    >
+                      <td className="p-3.5 font-bold text-gray-900">{d.name}</td>
+                      <td className="p-3.5 text-gray-600">{d.email}</td>
+                      <td className="p-3.5 font-heading font-bold text-[#b0004a]">
+                        {d.currency === 'NGN' ? `₦${Number(d.amount).toLocaleString()}` : `$${d.amount}`}
+                      </td>
+                      <td className="p-3.5">
+                        <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded text-[11px] font-semibold">
+                          {d.method || 'Direct Bank Transfer'}
+                        </span>
+                      </td>
+                      <td className="p-3.5 text-gray-500">{d.date}</td>
+                      <td className="p-3.5">
+                        <button className="text-[#b0004a] font-bold hover:underline">View Receipt</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* FULL VOLUNTEER PROFILE & OUTREACH INVITATION MODAL */}
+      {/* LIVE PREVIEW MODAL OVERLAY */}
+      {showLivePreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-5xl w-full p-6 shadow-2xl border border-gray-200 space-y-6 max-h-[90vh] overflow-y-auto relative">
+            <button
+              onClick={() => setShowLivePreview(false)}
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 z-10"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+
+            <div className="border-b border-gray-100 pb-3 flex items-center gap-3">
+              <span className="material-symbols-outlined text-[#b0004a] text-2xl">visibility</span>
+              <div>
+                <h3 className="font-heading font-bold text-xl text-gray-900">Live Executive Preview Mode</h3>
+                <p className="text-xs text-gray-500">Below is an exact live rendering of your updated statistics, tagline, and branding.</p>
+              </div>
+            </div>
+
+            {/* Preview Card */}
+            <div className="bg-[#f9f9f9] p-6 rounded-2xl border border-gray-200 space-y-6">
+              <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-gray-100">
+                <img src={settings.logo || '/logo.png'} alt="Logo" className="h-10 w-auto object-contain" />
+                <div>
+                  <h4 className="font-heading font-bold text-lg text-[#b0004a]">{settings.orgName}</h4>
+                  <p className="text-xs text-gray-500 italic">"{settings.tagline}"</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h2 className="font-heading font-bold text-2xl text-gray-900">{settings.heroTitle}</h2>
+                <p className="text-xs text-gray-600">{settings.heroSubtitle}</p>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                <div className="bg-white p-4 rounded-xl border border-gray-100">
+                  <span className="font-heading font-extrabold text-2xl text-[#b0004a] block">{settings.stats.livesTouched}</span>
+                  <span className="text-[11px] text-gray-500 font-bold uppercase">Lives Touched</span>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-gray-100">
+                  <span className="font-heading font-extrabold text-2xl text-[#b0004a] block">{settings.stats.outreachEvents}</span>
+                  <span className="text-[11px] text-gray-500 font-bold uppercase">Outreach Drives</span>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-gray-100">
+                  <span className="font-heading font-extrabold text-2xl text-[#b0004a] block">{settings.stats.activeVolunteers}</span>
+                  <span className="text-[11px] text-gray-500 font-bold uppercase">Active Volunteers</span>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-gray-100">
+                  <span className="font-heading font-extrabold text-2xl text-[#b0004a] block">{settings.stats.aidDistributed}</span>
+                  <span className="text-[11px] text-gray-500 font-bold uppercase">Aid Distributed</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowLivePreview(false)}
+                className="px-6 py-2.5 rounded-full bg-[#1a1c1c] text-white text-xs font-bold hover:bg-gray-800"
+              >
+                Close Live Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FULL VOLUNTEER PROFILE MODAL */}
       {selectedVolunteer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl border border-gray-200 space-y-6 relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-gray-200 space-y-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedVolunteer(null)}
               className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"
@@ -640,17 +1142,26 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
               <span className="material-symbols-outlined text-lg">close</span>
             </button>
 
-            <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-              <div className="w-12 h-12 rounded-full bg-[#ffd9de] text-[#b0004a] flex items-center justify-center font-bold text-xl">
-                {selectedVolunteer.name.charAt(0)}
-              </div>
+            <div className="flex items-center gap-4 border-b border-gray-100 pb-4">
+              {selectedVolunteer.photo_url || selectedVolunteer.photoUrl ? (
+                <img 
+                  src={selectedVolunteer.photo_url || selectedVolunteer.photoUrl} 
+                  alt={selectedVolunteer.full_name || selectedVolunteer.name} 
+                  className="w-20 h-20 rounded-full object-cover border-4 border-[#b0004a] shadow-md"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-[#ffd9de] text-[#b0004a] flex items-center justify-center font-bold text-3xl">
+                  {(selectedVolunteer.full_name || selectedVolunteer.name || 'V').charAt(0)}
+                </div>
+              )}
               <div>
-                <h3 className="font-heading font-bold text-xl text-gray-900">{selectedVolunteer.name}</h3>
-                <p className="text-xs text-gray-500">Volunteer Application Profile</p>
+                <h3 className="font-heading font-bold text-xl text-gray-900">{selectedVolunteer.full_name || selectedVolunteer.name}</h3>
+                <p className="text-xs font-bold text-[#b0004a]">{selectedVolunteer.occupation || 'Volunteer'}</p>
+                <p className="text-xs text-gray-500">Submitted: {new Date(selectedVolunteer.created_at || Date.now()).toLocaleDateString()}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="bg-gray-50 p-3.5 rounded-xl space-y-1">
                 <span className="text-gray-400 font-bold block text-[10px]">EMAIL ADDRESS</span>
                 <p className="font-semibold text-gray-800">{selectedVolunteer.email}</p>
@@ -659,46 +1170,38 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
                 <span className="text-gray-400 font-bold block text-[10px]">PHONE NUMBER</span>
                 <p className="font-semibold text-gray-800">{selectedVolunteer.phone}</p>
               </div>
-              <div className="bg-gray-50 p-3.5 rounded-xl space-y-1">
-                <span className="text-gray-400 font-bold block text-[10px]">STREET ADDRESS</span>
-                <p className="font-semibold text-gray-800">{selectedVolunteer.street || '123 Care Lane'}</p>
+              <div className="bg-gray-50 p-3.5 rounded-xl space-y-1 sm:col-span-2">
+                <span className="text-gray-400 font-bold block text-[10px]">DETAILED RESIDENTIAL HOME ADDRESS</span>
+                <p className="font-semibold text-gray-800">{selectedVolunteer.detailed_address || `${selectedVolunteer.street || ''}, ${selectedVolunteer.city || ''}, ${selectedVolunteer.state || ''}`}</p>
               </div>
               <div className="bg-gray-50 p-3.5 rounded-xl space-y-1">
-                <span className="text-gray-400 font-bold block text-[10px]">CITY, STATE, ZIP</span>
-                <p className="font-semibold text-gray-800">{selectedVolunteer.city || 'Metropolis'}, {selectedVolunteer.state || 'NY'} {selectedVolunteer.zip || '10001'}</p>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-xs">
-              <span className="text-gray-500 font-bold uppercase tracking-wider block">Volunteer Interest Categories</span>
-              <div className="flex flex-wrap gap-2">
-                {(selectedVolunteer.interests || ['Medical Outreach']).map((cat, idx) => (
-                  <span key={idx} className="bg-[#ffd9de] text-[#b0004a] px-3 py-1 rounded-full font-bold">
-                    {cat}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="bg-gray-50 p-3.5 rounded-xl space-y-1">
-                <span className="text-gray-400 font-bold block text-[10px]">SCHEDULE AVAILABILITY</span>
-                <p className="font-semibold text-gray-800 capitalize">{selectedVolunteer.availability || 'Weekends'}</p>
+                <span className="text-gray-400 font-bold block text-[10px]">LIVING PROFESSION / OCCUPATION</span>
+                <p className="font-semibold text-gray-800">{selectedVolunteer.occupation || 'N/A'}</p>
               </div>
               <div className="bg-gray-50 p-3.5 rounded-xl space-y-1">
-                <span className="text-gray-400 font-bold block text-[10px]">MEDICAL CREDENTIALS</span>
-                <p className="font-semibold text-gray-800">{selectedVolunteer.qualifications || 'RN Nurse'}</p>
+                <span className="text-gray-400 font-bold block text-[10px]">QUALIFICATIONS & SKILLS</span>
+                <p className="font-semibold text-gray-800">{selectedVolunteer.medical_qualifications || selectedVolunteer.qualifications || 'RN Nurse / Logistics'}</p>
               </div>
+              <div className="bg-gray-50 p-3.5 rounded-xl space-y-1 sm:col-span-2">
+                <span className="text-gray-400 font-bold block text-[10px]">EMERGENCY CONTACT PERSON</span>
+                <p className="font-semibold text-gray-800">{selectedVolunteer.emergency_contact || selectedVolunteer.emergencyContact || 'Family Contact'}</p>
+              </div>
+              {selectedVolunteer.motivation && (
+                <div className="bg-gray-50 p-3.5 rounded-xl space-y-1 sm:col-span-2">
+                  <span className="text-gray-400 font-bold block text-[10px]">MOTIVATION TO VOLUNTEER</span>
+                  <p className="font-semibold text-gray-800 italic">"{selectedVolunteer.motivation}"</p>
+                </div>
+              )}
             </div>
 
             {/* Send Program Invitation Form */}
             <div className="pt-4 border-t border-gray-200 space-y-3">
-              <h4 className="font-heading font-bold text-sm text-gray-900">Invite {selectedVolunteer.name} to Upcoming Outreach Program</h4>
+              <h4 className="font-heading font-bold text-sm text-gray-900">Invite {selectedVolunteer.full_name || selectedVolunteer.name} to Outreach Shift</h4>
               <form onSubmit={handleSendInvitation} className="space-y-3 text-xs">
                 <textarea
                   rows={3}
                   required
-                  placeholder={`Write invitation message to ${selectedVolunteer.name} regarding upcoming medical outreach shift...`}
+                  placeholder={`Write official invitation email to ${selectedVolunteer.email}...`}
                   value={invitationMessage}
                   onChange={(e) => setInvitationMessage(e.target.value)}
                   className="w-full bg-[#eee] p-3 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a] resize-none"
@@ -723,7 +1226,7 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
         </div>
       )}
 
-      {/* FULL DONOR TRANSACTION RECEIPT MODAL */}
+      {/* DONOR RECEIPT MODAL */}
       {selectedDonor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-gray-200 space-y-6 relative">

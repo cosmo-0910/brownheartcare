@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useSiteSettings } from '../context/SiteSettingsContext';
 
 export default function Footer({ setCurrentPage, openDonateModal, openVolunteerModal }) {
+  const { settings } = useSiteSettings();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -24,23 +26,30 @@ export default function Footer({ setCurrentPage, openDonateModal, openVolunteerM
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-16">
           {/* Brand Col */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navTo('home')}>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-white shadow-md">
-                <span className="material-symbols-outlined fill text-2xl">favorite</span>
-              </div>
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navTo('home-outreach')}>
+              <img 
+                src={settings.logo || '/logo.png'} 
+                alt={settings.orgName} 
+                className="h-12 w-auto max-w-[160px] object-contain"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.style.display = 'none';
+                }}
+              />
               <div>
                 <span className="font-heading font-bold text-xl text-primary block leading-none">
-                  Brown's Heart Care
+                  {settings.orgName}
                 </span>
-                <span className="text-xs font-semibold text-secondary tracking-widest uppercase">
-                  Foundation
+                <span className="text-xs font-medium text-secondary italic tracking-wide">
+                  "{settings.tagline}"
                 </span>
               </div>
             </div>
 
             <p className="text-sm text-on-surface-variant max-w-md leading-relaxed">
-              We breathe out love for others to inhale. Dedicated to promoting cardiovascular health, providing free health screenings, subsidized surgeries, emergency medication, and nutritional security.
+              We are a compassionate outreach foundation dedicated to health screenings, food security, emergency aid, and empowering underserved communities with love and dignity.
             </p>
+
 
             {/* Newsletter Form */}
             <div className="pt-2">
@@ -120,15 +129,17 @@ export default function Footer({ setCurrentPage, openDonateModal, openVolunteerM
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-surface-variant flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-secondary">
-          <p>© 2024 Brown's Heart Care Foundation. All Rights Reserved. Registered Non-Governmental Organization.</p>
+          <p>© {new Date().getFullYear()} {settings.orgName}. All Rights Reserved. Registered Non-Governmental Organization.</p>
           <div className="flex items-center gap-4">
-            <span className="hover:text-primary cursor-pointer transition-colors">Facebook</span>
-            <span className="hover:text-primary cursor-pointer transition-colors">Twitter/X</span>
-            <span className="hover:text-primary cursor-pointer transition-colors">Instagram</span>
-            <span className="hover:text-primary cursor-pointer transition-colors">LinkedIn</span>
+            <a href={settings.socialLinks.facebook || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Facebook</a>
+            <a href={settings.socialLinks.twitter || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Twitter/X</a>
+            <a href={settings.socialLinks.instagram || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Instagram</a>
+            <a href={settings.socialLinks.linkedin || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">LinkedIn</a>
+            <a href={settings.socialLinks.youtube || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">YouTube</a>
           </div>
         </div>
       </div>
     </footer>
   );
 }
+
