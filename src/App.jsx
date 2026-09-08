@@ -16,6 +16,7 @@ import AdminDashboard from './pages/AdminDashboard';
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home-outreach');
   const [isVolunteerOpen, setIsVolunteerOpen] = useState(false);
+  const [targetEvent, setTargetEvent] = useState(null);
   const { addDonation, addVolunteer } = useSiteSettings();
 
   // Check URL pathname for /bhcareexec
@@ -25,8 +26,15 @@ export default function App() {
     }
   }, []);
 
-  const openVolunteerModal = () => setIsVolunteerOpen(true);
-  const closeVolunteerModal = () => setIsVolunteerOpen(false);
+  const openVolunteerModal = (evt) => {
+    setTargetEvent(evt || null);
+    setIsVolunteerOpen(true);
+  };
+  
+  const closeVolunteerModal = () => {
+    setIsVolunteerOpen(false);
+    setTargetEvent(null);
+  };
 
   const renderPage = () => {
     switch (currentPage) {
@@ -72,6 +80,7 @@ export default function App() {
         isOpen={isVolunteerOpen} 
         onClose={closeVolunteerModal}
         onAddVolunteer={addVolunteer}
+        targetEvent={targetEvent}
       />
     </div>
   );

@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 
-export default function Events({ setCurrentPage, openVolunteerModal }) {
+export default function Events({ setCurrentPage, openVolunteerModal, openDonateModal }) {
   const { events: contextEvents, highlights: contextHighlights } = useSiteSettings();
   const [selectedOutreachDetail, setSelectedOutreachDetail] = useState(null);
+  const [selectedEventDetail, setSelectedEventDetail] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   const navTo = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-
 
   const handleOpenDetailModal = (item) => {
     setSelectedOutreachDetail(item);
@@ -38,61 +37,67 @@ export default function Events({ setCurrentPage, openVolunteerModal }) {
       {/* Featured Events Section */}
       <section className="py-16 bg-[#f3f3f3] border-y border-gray-200">
         <div className="max-w-[1100px] mx-auto px-4">
-          <h2 className="font-heading font-bold text-2xl text-[#1a1c1c] mb-8">Featured Events</h2>
+          <h2 className="font-heading font-bold text-2xl text-[#1a1c1c] mb-8">Featured Events & Programs</h2>
 
           {contextEvents && contextEvents.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {contextEvents.map((evt) => (
-                <div key={evt.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border-t-4 border-[#b0004a]">
-                  <div 
-                    className="h-64 w-full bg-cover bg-center"
-                    style={{
-                      backgroundImage: `url('${evt.img || '/hero/PHOTO-2026-09-01-13-37-18.jpg'}')`
-                    }}
-                  />
-                  <div className="p-6 space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="inline-block px-3 py-1 bg-[#ffd9de] text-[#90003b] rounded-full text-xs font-semibold">
-                        {evt.typeLabel || 'Community Outreach'}
-                      </span>
-                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                        evt.status === 'Upcoming' ? 'bg-blue-100 text-blue-800' :
-                        evt.status === 'Current' ? 'bg-emerald-100 text-emerald-800 animate-pulse' :
-                        'bg-gray-200 text-gray-700'
-                      }`}>
-                        {evt.status || 'Upcoming'}
-                      </span>
+                <div key={evt.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border-t-4 border-[#b0004a] flex flex-col justify-between">
+                  <div>
+                    {/* Square / Boxy Image Container to show full outreach advertisement poster */}
+                    <div className="aspect-square md:aspect-[4/3] max-h-80 w-full bg-gray-100 overflow-hidden relative flex items-center justify-center">
+                      <img 
+                        src={evt.img || '/hero/PHOTO-2026-09-01-13-37-18.jpg'} 
+                        alt={evt.title}
+                        className="w-full h-full object-contain bg-black/5"
+                      />
                     </div>
-
-                    <h3 className="font-heading font-bold text-xl text-[#1a1c1c]">{evt.title}</h3>
-                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
-                      {evt.desc}
-                    </p>
-                    <div className="space-y-1.5 text-xs text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#b0004a] text-base">calendar_today</span>
-                        <span>{evt.date}</span>
+                    <div className="p-6 space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="inline-block px-3 py-1 bg-[#ffd9de] text-[#90003b] rounded-full text-xs font-semibold">
+                          {evt.typeLabel || 'Community Outreach'}
+                        </span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                          evt.status === 'Upcoming' ? 'bg-blue-100 text-blue-800' :
+                          evt.status === 'Current' ? 'bg-emerald-100 text-emerald-800 animate-pulse' :
+                          'bg-gray-200 text-gray-700'
+                        }`}>
+                          {evt.status || 'Upcoming'}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#b0004a] text-base">location_on</span>
-                        <span>{evt.location}</span>
+
+                      <h3 className="font-heading font-bold text-xl text-[#1a1c1c]">{evt.title}</h3>
+                      <p className="text-gray-600 text-xs sm:text-sm leading-relaxed line-clamp-3">
+                        {evt.desc}
+                      </p>
+                      <div className="space-y-1.5 text-xs text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[#b0004a] text-base">calendar_today</span>
+                          <span>{evt.date}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[#b0004a] text-base">location_on</span>
+                          <span>{evt.location}</span>
+                        </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                      <button 
-                        onClick={openVolunteerModal}
-                        className="flex-1 bg-[#b0004a] text-white py-3 rounded-full text-xs font-semibold hover:bg-[#90003b] transition-all"
-                      >
-                        Volunteer Now
-                      </button>
-                      <button 
-                        onClick={() => navTo('home-outreach')}
-                        className="flex-1 border border-gray-400 text-gray-700 py-3 rounded-full text-xs font-semibold hover:bg-gray-100 transition-all"
-                      >
-                        Learn More
-                      </button>
-                    </div>
+                  <div className="p-6 pt-0 flex flex-col sm:flex-row gap-3">
+                    <button 
+                      onClick={() => openVolunteerModal && openVolunteerModal(evt)}
+                      className="flex-1 bg-[#b0004a] text-white py-3 rounded-full text-xs font-semibold hover:bg-[#90003b] transition-all shadow-sm flex items-center justify-center gap-1.5"
+                    >
+                      <span className="material-symbols-outlined text-base">how_to_reg</span>
+                      <span>Volunteer Now</span>
+                    </button>
+                    <button 
+                      onClick={() => setSelectedEventDetail(evt)}
+                      className="flex-1 border border-gray-400 text-gray-700 py-3 rounded-full text-xs font-semibold hover:bg-gray-100 transition-all flex items-center justify-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-base">info</span>
+                      <span>Learn More</span>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -326,6 +331,101 @@ export default function Events({ setCurrentPage, openVolunteerModal }) {
                       className="flex-1 py-3 rounded-full bg-[#b0004a] text-white text-xs font-bold shadow-md hover:bg-[#90003b] transition-all"
                     >
                       Volunteer for Next Event
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dedicated Outreach Event Full Details Modal (Requested by User) */}
+      {selectedEventDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl border border-gray-200 max-h-[92vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-[#1a1c1c] text-white px-6 py-4 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 bg-[#ffd9de] text-[#b0004a] rounded-full text-xs font-bold">
+                  {selectedEventDetail.typeLabel || 'Outreach Program'}
+                </span>
+                <span className="text-xs text-gray-300 font-semibold">{selectedEventDetail.status || 'Upcoming'}</span>
+              </div>
+              <button
+                onClick={() => setSelectedEventDetail(null)}
+                className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
+              >
+                <span className="material-symbols-outlined text-lg">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 md:p-8 overflow-y-auto space-y-6 flex-grow">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                {/* Left Side: Boxy Poster Image */}
+                <div className="md:col-span-5 space-y-4">
+                  <div className="aspect-square w-full rounded-2xl overflow-hidden shadow-md bg-black/5 border border-gray-200">
+                    <img 
+                      src={selectedEventDetail.img || '/hero/PHOTO-2026-09-01-13-37-18.jpg'} 
+                      alt={selectedEventDetail.title}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-xl space-y-2 text-xs text-gray-700 border border-gray-200">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[#b0004a] text-base">calendar_today</span>
+                      <span className="font-bold">{selectedEventDetail.date}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[#b0004a] text-base">location_on</span>
+                      <span className="font-bold">{selectedEventDetail.location}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Side: Detailed Program Information */}
+                <div className="md:col-span-7 space-y-6">
+                  <div>
+                    <h2 className="font-heading font-bold text-2xl md:text-3xl text-[#1a1c1c] mb-3">
+                      {selectedEventDetail.title}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                      {selectedEventDetail.desc}
+                    </p>
+                  </div>
+
+                  <div className="bg-[#ffd9de]/30 p-4 rounded-2xl border border-[#ffd9de] space-y-2">
+                    <h4 className="font-heading font-bold text-xs text-[#b0004a] uppercase tracking-wider">Foundation Outreach Objectives</h4>
+                    <ul className="text-xs text-gray-700 space-y-1.5 list-disc list-inside">
+                      <li>Free vital health screenings & diagnostic evaluations.</li>
+                      <li>Distribution of essential food relief kits & nutritional supplies.</li>
+                      <li>Community health education & ongoing medical support.</li>
+                    </ul>
+                  </div>
+
+                  <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => {
+                        const targetEvt = selectedEventDetail;
+                        setSelectedEventDetail(null);
+                        openVolunteerModal && openVolunteerModal(targetEvt);
+                      }}
+                      className="flex-1 py-3.5 rounded-full bg-[#b0004a] text-white text-xs font-bold shadow-md hover:bg-[#90003b] transition-all flex items-center justify-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-base">how_to_reg</span>
+                      <span>Volunteer for This Event</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setSelectedEventDetail(null);
+                        openDonateModal && openDonateModal();
+                      }}
+                      className="py-3.5 px-6 rounded-full border border-gray-400 text-gray-800 text-xs font-semibold hover:bg-gray-100 transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <span className="material-symbols-outlined text-base text-[#b0004a]">favorite</span>
+                      <span>Sponsor Outreach</span>
                     </button>
                   </div>
                 </div>

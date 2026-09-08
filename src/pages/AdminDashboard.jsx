@@ -163,6 +163,28 @@ export default function AdminDashboard({
     alert('New Story Record added to Our Story timeline!');
   };
 
+  const handleStoryImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewStory(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEditStoryImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingStory(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -537,74 +559,134 @@ export default function AdminDashboard({
           </div>
         )}
 
-        {/* VOLUNTEERS TAB WITH DELETE ACTION */}
-        {activeTab === 'volunteers' && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-4">
-              <div>
-                <h3 className="font-heading font-bold text-xl text-gray-900">Volunteer Submissions Roster ({allVolunteers.length})</h3>
-                <p className="text-xs text-gray-500">Every volunteer's photo, home address, living profession, qualifications, and emergency contact details.</p>
-              </div>
-            </div>
+        {/* VOLUNTEERS TAB WITH DELETE & OUTREACH EVENT FILTERING */}
+        {activeTab === 'volunteers' && (() => {
+          const filteredVolunteers = selectedEventFilter === 'All'
+            ? allVolunteers
+            : allVolunteers.filter(v => (v.event_title || 'General Outreach Volunteer') === selectedEventFilter);
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {allVolunteers.map((vol, idx) => (
-                <div 
-                  key={idx} 
-                  className="bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-sm hover:border-[#b0004a] transition-all space-y-4 flex flex-col justify-between"
-                >
-                  <div className="space-y-3 cursor-pointer" onClick={() => setSelectedVolunteer(vol)}>
-                    <div className="flex items-center gap-3">
-                      {vol.photo_url || vol.photoUrl ? (
-                        <img 
-                          src={vol.photo_url || vol.photoUrl} 
-                          alt={vol.full_name || vol.name} 
-                          className="w-14 h-14 rounded-full object-cover border-2 border-[#b0004a] shadow-sm shrink-0" 
-                        />
-                      ) : (
-                        <div className="w-14 h-14 rounded-full bg-[#ffd9de] text-[#b0004a] flex items-center justify-center font-bold text-xl shrink-0">
-                          {(vol.full_name || vol.name || 'V').charAt(0)}
-                        </div>
-                      )}
-                      <div>
-                        <h4 className="font-heading font-bold text-base text-gray-900">{vol.full_name || vol.name}</h4>
-                        <p className="text-xs font-semibold text-[#b0004a]">{vol.occupation || 'Volunteer'}</p>
-                        <p className="text-[11px] text-gray-500">{vol.email}</p>
-                      </div>
-                    </div>
+          const eventOptions = Array.from(new Set(allVolunteers.map(v => v.event_title || 'General Outreach Volunteer')));
 
-                    <div className="bg-white p-3 rounded-xl border border-gray-100 space-y-1.5 text-xs">
-                      <div className="flex items-start gap-1.5 text-gray-700">
-                        <span className="material-symbols-outlined text-sm text-[#b0004a] shrink-0 mt-0.5">home</span>
-                        <span className="line-clamp-2">{vol.detailed_address || `${vol.street || ''}, ${vol.city || ''}, ${vol.state || ''}`}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-gray-700">
-                        <span className="material-symbols-outlined text-sm text-[#b0004a] shrink-0">call</span>
-                        <span>{vol.phone}</span>
-                      </div>
-                    </div>
-                  </div>
+          const handleBulkEmail = () => {
+            const emails = filteredVolunteers.map(v => v.email).filter(Boolean).join(',');
+            if (!emails) {
+              alert('No volunteer emails found for this event selection.');
+              return;
+            }
+            window.location.href = `mailto:${emails}?subject=${encodeURIComponent(`Brown Heart Care Outreach Update: ${selectedEventFilter}`)}`;
+          };
 
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => setSelectedVolunteer(vol)}
-                      className="flex-1 py-2 bg-[#b0004a] text-white rounded-xl text-xs font-bold hover:bg-[#90003b] transition-colors"
-                    >
-                      View Profile & Invite
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteVolunteer(vol.id)}
-                      className="px-3 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-xl text-xs font-bold transition-colors"
-                      title="Delete volunteer record"
-                    >
-                      <span className="material-symbols-outlined text-base">delete</span>
-                    </button>
-                  </div>
+          return (
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 animate-fadeIn">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-4">
+                <div>
+                  <h3 className="font-heading font-bold text-xl text-gray-900">Volunteer Submissions Roster ({filteredVolunteers.length})</h3>
+                  <p className="text-xs text-gray-500">Filter volunteers by specific outreach program, view full contact details, and send bulk updates.</p>
                 </div>
-              ))}
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-2 text-xs">
+                    <label className="font-bold text-gray-700">Filter by Outreach:</label>
+                    <select
+                      value={selectedEventFilter}
+                      onChange={(e) => setSelectedEventFilter(e.target.value)}
+                      className="bg-gray-100 border border-gray-300 rounded-xl px-3 py-2 text-xs font-semibold text-gray-800 focus:outline-none focus:border-[#b0004a]"
+                    >
+                      <option value="All">All Outreach Events ({allVolunteers.length})</option>
+                      {eventOptions.map((evtName, idx) => (
+                        <option key={idx} value={evtName}>{evtName}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={handleBulkEmail}
+                    className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                  >
+                    <span className="material-symbols-outlined text-base">mail</span>
+                    <span>Bulk Email Event Volunteers</span>
+                  </button>
+                </div>
+              </div>
+
+              {filteredVolunteers.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredVolunteers.map((vol, idx) => (
+                    <div 
+                      key={idx} 
+                      className="bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-sm hover:border-[#b0004a] transition-all space-y-4 flex flex-col justify-between"
+                    >
+                      <div className="space-y-3 cursor-pointer" onClick={() => setSelectedVolunteer(vol)}>
+                        <div className="flex justify-between items-start gap-2">
+                          <span className="bg-[#ffd9de] text-[#b0004a] px-2.5 py-0.5 rounded-full text-[10px] font-bold line-clamp-1">
+                            {vol.event_title || 'General Outreach Volunteer'}
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-semibold">{vol.created_at ? new Date(vol.created_at).toLocaleDateString() : ''}</span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          {vol.photo_url || vol.photoUrl ? (
+                            <img 
+                              src={vol.photo_url || vol.photoUrl} 
+                              alt={vol.full_name || vol.name} 
+                              className="w-14 h-14 rounded-full object-cover border-2 border-[#b0004a] shadow-sm shrink-0" 
+                            />
+                          ) : (
+                            <div className="w-14 h-14 rounded-full bg-[#ffd9de] text-[#b0004a] flex items-center justify-center font-bold text-xl shrink-0">
+                              {(vol.full_name || vol.name || 'V').charAt(0)}
+                            </div>
+                          )}
+                          <div>
+                            <h4 className="font-heading font-bold text-base text-gray-900">{vol.full_name || vol.name}</h4>
+                            <p className="text-xs font-semibold text-[#b0004a]">{vol.occupation || 'Volunteer'}</p>
+                            <p className="text-[11px] text-gray-500">{vol.email}</p>
+                          </div>
+                        </div>
+
+                        <div className="bg-white p-3 rounded-xl border border-gray-100 space-y-1.5 text-xs">
+                          <div className="flex items-start gap-1.5 text-gray-700">
+                            <span className="material-symbols-outlined text-sm text-[#b0004a] shrink-0 mt-0.5">home</span>
+                            <span className="line-clamp-2">{vol.detailed_address || `${vol.street || ''}, ${vol.city || ''}, ${vol.state || ''}`}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-gray-700">
+                            <span className="material-symbols-outlined text-sm text-[#b0004a] shrink-0">call</span>
+                            <span>{vol.phone}</span>
+                          </div>
+                          <div className="flex items-start gap-1.5 text-gray-600 pt-1 border-t border-gray-100">
+                            <span className="material-symbols-outlined text-sm text-[#b0004a] shrink-0 mt-0.5">psychology</span>
+                            <span className="line-clamp-2 italic">"{vol.qualifications || vol.medical_qualifications || 'General volunteer skills'}"</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => setSelectedVolunteer(vol)}
+                          className="flex-1 py-2 bg-[#b0004a] text-white rounded-xl text-xs font-bold hover:bg-[#90003b] transition-colors"
+                        >
+                          View Profile & Invite
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteVolunteer(vol.id)}
+                          className="px-3 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-xl text-xs font-bold transition-colors"
+                          title="Delete volunteer record"
+                        >
+                          <span className="material-symbols-outlined text-base">delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-gray-50 rounded-2xl border border-gray-200 space-y-2">
+                  <span className="material-symbols-outlined text-4xl text-gray-400">group_off</span>
+                  <h4 className="font-bold text-gray-700 text-sm">No Volunteers Found for "{selectedEventFilter}"</h4>
+                  <p className="text-xs text-gray-500 max-w-sm mx-auto">Select another outreach event from the dropdown filter or view all registered volunteers.</p>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* SITE TEXT & STATS MANAGER TAB */}
         {activeTab === 'site-content' && (
@@ -868,6 +950,39 @@ export default function AdminDashboard({
                   />
                 </div>
 
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Story / Event Picture</label>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <label className="cursor-pointer px-4 py-2 bg-white border border-gray-300 rounded-xl hover:bg-gray-100 flex items-center gap-2 font-medium text-gray-700 shrink-0">
+                      <span className="material-symbols-outlined text-base text-[#b0004a]">upload_file</span>
+                      <span>Upload Photo</span>
+                      <input type="file" accept="image/*" onChange={handleStoryImageUpload} className="hidden" />
+                    </label>
+                    <div className="flex-1 w-full">
+                      <input
+                        type="text"
+                        placeholder="Or paste image URL (https://...)"
+                        value={newStory.image}
+                        onChange={(e) => setNewStory({ ...newStory, image: e.target.value })}
+                        className="w-full bg-white p-2.5 rounded-xl border border-gray-200"
+                      />
+                    </div>
+                  </div>
+                  {newStory.image && (
+                    <div className="mt-2 relative w-32 h-20 rounded-xl overflow-hidden border border-gray-200 shadow-sm group">
+                      <img src={newStory.image} alt="Preview" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setNewStory({ ...newStory, image: '' })}
+                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        title="Remove picture"
+                      >
+                        <span className="material-symbols-outlined text-xs block">close</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex justify-end">
                   <button
                     type="submit"
@@ -883,7 +998,12 @@ export default function AdminDashboard({
                 <h4 className="font-bold text-xs text-gray-700 uppercase tracking-wider">Current Timeline Stories ({(settings?.ourStoryEntries || []).length})</h4>
                 <div className="space-y-3">
                   {(settings?.ourStoryEntries || []).map((st) => (
-                    <div key={st.id} className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-start gap-4 text-xs">
+                    <div key={st.id} className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex flex-col sm:flex-row justify-between items-start gap-4 text-xs">
+                      {st.image && (
+                        <div className="w-full sm:w-28 h-20 rounded-lg overflow-hidden shrink-0 border border-gray-200 bg-gray-100">
+                          <img src={st.image} alt={st.title} className="w-full h-full object-cover" />
+                        </div>
+                      )}
                       <div className="space-y-1 flex-1">
                         <span className="bg-[#b0004a] text-white px-2 py-0.5 rounded font-bold text-[10px]">{st.year}</span>
                         <h5 className="font-heading font-bold text-sm text-gray-900">{st.title}</h5>
@@ -957,6 +1077,39 @@ export default function AdminDashboard({
                         onChange={(e) => setEditingStory({ ...editingStory, description: e.target.value })}
                         className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-medium text-gray-900 focus:bg-white focus:border-[#b0004a] resize-none"
                       />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Story / Event Picture</label>
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <label className="cursor-pointer px-4 py-2 bg-[#eee] border border-gray-200 rounded-xl hover:bg-gray-200 flex items-center gap-2 font-medium text-gray-700 shrink-0">
+                          <span className="material-symbols-outlined text-base text-[#b0004a]">upload_file</span>
+                          <span>Upload New Photo</span>
+                          <input type="file" accept="image/*" onChange={handleEditStoryImageUpload} className="hidden" />
+                        </label>
+                        <div className="flex-1 w-full">
+                          <input
+                            type="text"
+                            placeholder="Or image URL (https://...)"
+                            value={editingStory.image || ''}
+                            onChange={(e) => setEditingStory({ ...editingStory, image: e.target.value })}
+                            className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-medium text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                          />
+                        </div>
+                      </div>
+                      {editingStory.image && (
+                        <div className="mt-2 relative w-36 h-24 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                          <img src={editingStory.image} alt="Preview" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setEditingStory({ ...editingStory, image: '' })}
+                            className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                            title="Remove picture"
+                          >
+                            <span className="material-symbols-outlined text-xs block">close</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-2 justify-end pt-2">
@@ -1306,7 +1459,8 @@ export default function AdminDashboard({
                 <thead>
                   <tr className="bg-gray-100 text-gray-700 font-bold border-b border-gray-200">
                     <th className="p-3.5">Donor Name</th>
-                    <th className="p-3.5">Email</th>
+                    <th className="p-3.5">Email & Phone</th>
+                    <th className="p-3.5">Frequency</th>
                     <th className="p-3.5">Amount</th>
                     <th className="p-3.5">Payment Method</th>
                     <th className="p-3.5">Date</th>
@@ -1320,14 +1474,26 @@ export default function AdminDashboard({
                       onClick={() => setSelectedDonor(d)}
                       className="hover:bg-[#ffd9de]/10 cursor-pointer transition-colors"
                     >
-                      <td className="p-3.5 font-bold text-gray-900">{d.name}</td>
-                      <td className="p-3.5 text-gray-600">{d.email}</td>
+                      <td className="p-3.5 font-bold text-gray-900">{d.donorName || d.name || 'Anonymous Donor'}</td>
+                      <td className="p-3.5 text-gray-600">
+                        <div>{d.email || 'No email'}</div>
+                        <div className="text-[11px] text-gray-400">{d.phone || ''}</div>
+                      </td>
+                      <td className="p-3.5">
+                        <span className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          (d.frequency || '').toLowerCase() === 'monthly'
+                            ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {(d.frequency || '').toLowerCase() === 'monthly' ? 'Monthly Supporter' : 'One-Time Gift'}
+                        </span>
+                      </td>
                       <td className="p-3.5 font-heading font-bold text-[#b0004a]">
                         {d.currency === 'NGN' ? `₦${Number(d.amount).toLocaleString()}` : `$${d.amount}`}
                       </td>
                       <td className="p-3.5">
                         <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded text-[11px] font-semibold">
-                          {d.method || 'Direct Bank Transfer'}
+                          {d.paymentMethod === 'card' ? 'Credit / Debit Card' : (d.paymentMethod === 'transfer' ? 'Direct Bank Transfer' : (d.method || 'Direct Bank Transfer'))}
                         </span>
                       </td>
                       <td className="p-3.5 text-gray-500">{d.date}</td>

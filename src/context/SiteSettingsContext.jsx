@@ -178,6 +178,11 @@ export function SiteSettingsProvider({ children }) {
     const updated = [newVol, ...volunteers];
     setVolunteers(updated);
     localStorage.setItem('bhc_volunteers_roster', JSON.stringify(updated));
+
+    // Live auto-increment active volunteers count in settings stats
+    const currentCount = parseInt(settings?.stats?.activeVolunteers || '0', 10) || 0;
+    const newCount = (currentCount + 1).toString();
+    updateStats({ activeVolunteers: newCount });
   };
 
   const deleteVolunteer = (volId) => {

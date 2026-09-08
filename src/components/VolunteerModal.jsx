@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
-export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
+export default function VolunteerModal({ isOpen, onClose, onAddVolunteer, targetEvent }) {
   const [step, setStep] = useState(1);
   const [selectedInterests, setSelectedInterests] = useState(['medical', 'events']);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [validationError, setValidationError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [hasCachedProfile, setHasCachedProfile] = useState(false);
+
+  const targetEventTitle = typeof targetEvent === 'string' 
+    ? targetEvent 
+    : (targetEvent?.title || 'General Outreach Volunteer');
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -22,6 +27,43 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
     motivation: '',
     photoUrl: ''
   });
+
+  // Auto-fill from cached profile on open
+  useEffect(() => {
+    if (isOpen) {
+      const cached = localStorage.getItem('bhc_cached_volunteer');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          setFormData(prev => ({ ...prev, ...parsed }));
+          if (parsed.photoUrl) setPhotoPreview(parsed.photoUrl);
+          setHasCachedProfile(true);
+        } catch (e) {
+          console.error('Failed to load cached volunteer profile', e);
+        }
+      }
+    }
+  }, [isOpen]);
+
+  const clearCachedProfile = () => {
+    localStorage.removeItem('bhc_cached_volunteer');
+    setHasCachedProfile(false);
+    setPhotoPreview(null);
+    setFormData({
+      fullName: '',
+      email: '',
+      phone: '',
+      street: '',
+      city: '',
+      state: '',
+      zip: '',
+      occupation: '',
+      qualifications: '',
+      emergencyContact: '',
+      motivation: '',
+      photoUrl: ''
+    });
+  };
 
   if (!isOpen) return null;
 
@@ -81,7 +123,7 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
       return false;
     }
     if (!formData.qualifications.trim()) {
-      setValidationError('Medical / Professional Qualifications & Skills are compulsory.');
+      setValidationError('Profession, Specialization & Key Skills are compulsory.');
       return false;
     }
     if (!formData.emergencyContact.trim()) {
@@ -100,6 +142,10 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
     if (!validateStep3()) return;
 
     setSubmitting(true);
+
+    // Save profile to local cache for auto-fill on future visits
+    localStorage.setItem('bhc_cached_volunteer', JSON.stringify(formData));
+
     const volunteerRecord = {
       id: window.crypto.randomUUID ? window.crypto.randomUUID() : `vol-${Date.now()}`,
       full_name: formData.fullName,
@@ -111,10 +157,12 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
       zip_code: formData.zip,
       detailed_address: `${formData.street}, ${formData.city}, ${formData.state} ${formData.zip}`.trim(),
       occupation: formData.occupation,
-      medical_qualifications: formData.qualifications,
+      medical_qualifications: formData.qualifications, // legacy field key maintained for db compatibility
+      qualifications: formData.qualifications,
       emergency_contact: formData.emergencyContact,
       motivation: formData.motivation,
       photo_url: formData.photoUrl,
+      event_title: targetEventTitle,
       interests: selectedInterests.map(i => {
         if (i === 'medical') return 'Medical Screening & Outreach';
         if (i === 'events') return 'Community Food & Aid';
@@ -150,6 +198,7 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
         qualifications: formData.qualifications,
         emergencyContact: formData.emergencyContact,
         photoUrl: formData.photoUrl,
+        event_title: targetEventTitle,
         interests: volunteerRecord.interests
       });
     }
@@ -260,6 +309,34 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
             <div className="max-w-3xl mx-auto p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center gap-2 animate-shake">
               <span className="material-symbols-outlined text-base text-red-600">error</span>
               <span>{validationError}</span>
+            </div>
+          )}
+
+          {/* Target Event Banner */}
+          {targetEventTitle && (
+            <div className="max-w-3xl mx-auto bg-[#ffd9de]/50 border border-[#b0004a]/30 p-3.5 rounded-2xl flex items-center justify-between text-xs text-[#90003b]">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-base text-[#b0004a]">event_available</span>
+                <span>Volunteering specifically for: <strong className="text-[#b0004a] font-bold">{targetEventTitle}</strong></span>
+              </div>
+              <span className="bg-[#b0004a] text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase">Target Event</span>
+            </div>
+          )}
+
+          {/* Cached Profile Auto-Fill Alert */}
+          {hasCachedProfile && step === 1 && (
+            <div className="max-w-3xl mx-auto p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-800 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-base text-emerald-600">verified_user</span>
+                <span>Welcome back! Your saved volunteer profile has been auto-filled.</span>
+              </div>
+              <button
+                type="button"
+                onClick={clearCachedProfile}
+                className="text-[11px] font-bold text-red-600 hover:underline"
+              >
+                Clear Saved Details
+              </button>
             </div>
           )}
 
@@ -525,12 +602,12 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer }) {
 
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">
-                    Medical / Professional Qualifications & Experience <span className="text-red-500">*</span>
+                    Profession, Specialization & Key Skills <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     rows={3}
                     required
-                    placeholder="Describe your qualifications, skills, medical certifications, or volunteer experience..."
+                    placeholder="Describe your profession, key skills, area of expertise, or past community experience..."
                     value={formData.qualifications}
                     onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
                     className="w-full bg-[#f4f4f4] border border-transparent rounded-xl py-3 px-4 text-xs font-medium text-gray-800 focus:outline-none focus:bg-white focus:border-[#b0004a] resize-none"

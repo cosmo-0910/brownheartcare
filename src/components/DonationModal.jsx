@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useSiteSettings } from '../context/SiteSettingsContext';
 
 export default function DonationModal({ isOpen, onClose }) {
+  const { addDonation } = useSiteSettings();
   const [frequency, setFrequency] = useState('one-time');
   const [amount, setAmount] = useState(50);
   const [customAmount, setCustomAmount] = useState('');
@@ -31,10 +33,28 @@ export default function DonationModal({ isOpen, onClose }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
+
+    const donationObj = {
+      id: `don-${Date.now()}`,
+      donorName: formData.name || 'Anonymous Donor',
+      email: formData.email,
+      phone: formData.phone || 'N/A',
+      amount: currentAmount,
+      frequency: frequency, // 'one-time' or 'monthly'
+      paymentMethod: formData.paymentMethod, // 'card' or 'transfer'
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      timestamp: new Date().toISOString(),
+      status: 'Completed'
+    };
+
+    if (addDonation) {
+      addDonation(donationObj);
+    }
+
     setTimeout(() => {
       setLoading(false);
       setSuccess(true);
-    }, 1500);
+    }, 1200);
   };
 
   const resetAndClose = () => {
