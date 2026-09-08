@@ -8,21 +8,21 @@ const defaultSettings = {
   heroTitle: "Touching Lives, Restoring Hope for Underserved Communities",
   heroSubtitle: "We are a dedicated outreach foundation providing free health screenings, food, clothing, and essential care to the poor and vulnerable.",
   stats: {
-    livesTouched: '5,000+',
-    outreachEvents: '120+',
-    activeVolunteers: '450+',
-    aidDistributed: '10,000+'
+    livesTouched: '0',
+    outreachEvents: '0',
+    activeVolunteers: '0',
+    aidDistributed: '0'
   },
   socialLinks: {
-    instagram: 'https://instagram.com',
-    facebook: 'https://facebook.com',
-    youtube: 'https://youtube.com',
-    linkedin: 'https://linkedin.com',
-    twitter: 'https://twitter.com',
+    instagram: '',
+    facebook: '',
+    youtube: '',
+    linkedin: '',
+    twitter: '',
     whatsapp: 'https://wa.me/2348136374060'
   },
   contactInfo: {
-    phone: '08136374060 / 09150973161 (Miss. Brown) | +234 810 736 9839 (Miss Esther)',
+    phone: '08136374060 / 09150973161 (Mrs. Brown) | +234 810 736 9839 (Miss Esther)',
     mrsBrownPhone: '08136374060 / 09150973161',
     missEstherPhone: '+234 810 736 9839',
     email: 'brownheartcare@gmail.com',
@@ -33,27 +33,13 @@ const defaultSettings = {
     accountNumber: '1009761198',
     accountName: 'Aina Esther Oluwatoyin'
   },
-  ourStoryEntries: [
-    {
-      id: 'story-1',
-      year: '2023',
-      title: 'Rural Community Health Screening & Aid',
-      description: 'Conducted comprehensive health screenings, free vital checks, and distributed over 1,500 care packages to elderly residents in underserved rural districts.',
-      image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      id: 'story-2',
-      year: '2024',
-      title: 'Emergency Relief & Food Distribution Drive',
-      description: 'Mobilized 80+ volunteers to provide hot meals, clean water, and nutritional kits to 2,000+ vulnerable families during flood disaster recovery.',
-      image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80'
-    }
-  ]
+  ourStoryEntries: []
 };
 
 const SiteSettingsContext = createContext();
 
 export function SiteSettingsProvider({ children }) {
+  // Main settings state
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('bhc_site_settings');
     if (saved) {
@@ -66,7 +52,31 @@ export function SiteSettingsProvider({ children }) {
     return defaultSettings;
   });
 
-  // Fetch remote settings from Supabase if table exists
+  // Dynamic Events State (Starts empty, no gimmicks!)
+  const [events, setEvents] = useState(() => {
+    const saved = localStorage.getItem('bhc_events');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Dynamic Highlights State (Starts empty, no gimmicks!)
+  const [highlights, setHighlights] = useState(() => {
+    const saved = localStorage.getItem('bhc_highlights');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Dynamic Volunteers Roster State
+  const [volunteers, setVolunteers] = useState(() => {
+    const saved = localStorage.getItem('bhc_volunteers_roster');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Dynamic Donations State
+  const [donations, setDonations] = useState(() => {
+    const saved = localStorage.getItem('bhc_donations');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Fetch remote settings from Supabase if connected
   useEffect(() => {
     async function loadRemoteSettings() {
       try {
@@ -77,6 +87,8 @@ export function SiteSettingsProvider({ children }) {
             remoteObj[item.key] = item.value;
           });
           setSettings(prev => ({ ...prev, ...remoteObj }));
+          if (remoteObj.events) setEvents(remoteObj.events);
+          if (remoteObj.highlights) setHighlights(remoteObj.highlights);
         }
       } catch (err) {
         console.log('Supabase sync notice:', err.message || err);
@@ -85,12 +97,12 @@ export function SiteSettingsProvider({ children }) {
     loadRemoteSettings();
   }, []);
 
+  // Save Settings helper
   const updateSettings = async (newSettings) => {
     const updated = { ...settings, ...newSettings };
     setSettings(updated);
     localStorage.setItem('bhc_site_settings', JSON.stringify(updated));
 
-    // Async persist to Supabase if connected
     try {
       for (const [key, value] of Object.entries(newSettings)) {
         await supabase.from('site_content').upsert({
@@ -102,6 +114,68 @@ export function SiteSettingsProvider({ children }) {
     } catch (e) {
       console.warn('Local save successful; Supabase sync deferred:', e.message);
     }
+  };
+
+  // Helper functions for Events
+  const addEvent = (newEvent) => {
+    const updated = [newEvent, ...events];
+    setEvents(updated);
+    localStorage.setItem('bhc_events', JSON.stringify(updated));
+    updateSettings({ events: updated });
+  };
+
+  const updateEventsList = (updatedEvents) => {
+    setEvents(updatedEvents);
+    localStorage.setItem('bhc_events', JSON.stringify(updatedEvents));
+    updateSettings({ events: updatedEvents });
+  };
+
+  const deleteEvent = (eventId) => {
+    const updated = events.filter(e => e.id !== eventId);
+    setEvents(updated);
+    localStorage.setItem('bhc_events', JSON.stringify(updated));
+    updateSettings({ events: updated });
+  };
+
+  // Helper functions for Highlights / Video Showcase
+  const addHighlight = (newHighlight) => {
+    const updated = [newHighlight, ...highlights];
+    setHighlights(updated);
+    localStorage.setItem('bhc_highlights', JSON.stringify(updated));
+    updateSettings({ highlights: updated });
+  };
+
+  const updateHighlightsList = (updatedHighlights) => {
+    setHighlights(updatedHighlights);
+    localStorage.setItem('bhc_highlights', JSON.stringify(updatedHighlights));
+    updateSettings({ highlights: updatedHighlights });
+  };
+
+  const deleteHighlight = (highlightId) => {
+    const updated = highlights.filter(h => h.id !== highlightId);
+    setHighlights(updated);
+    localStorage.setItem('bhc_highlights', JSON.stringify(updated));
+    updateSettings({ highlights: updated });
+  };
+
+  // Helper functions for Volunteers
+  const addVolunteer = (newVol) => {
+    const updated = [newVol, ...volunteers];
+    setVolunteers(updated);
+    localStorage.setItem('bhc_volunteers_roster', JSON.stringify(updated));
+  };
+
+  const deleteVolunteer = (volId) => {
+    const updated = volunteers.filter(v => v.id !== volId);
+    setVolunteers(updated);
+    localStorage.setItem('bhc_volunteers_roster', JSON.stringify(updated));
+  };
+
+  // Helper functions for Donations
+  const addDonation = (newDonation) => {
+    const updated = [newDonation, ...donations];
+    setDonations(updated);
+    localStorage.setItem('bhc_donations', JSON.stringify(updated));
   };
 
   const updateStats = (newStats) => {
@@ -138,6 +212,19 @@ export function SiteSettingsProvider({ children }) {
       value={{
         settings,
         updateSettings,
+        events,
+        addEvent,
+        updateEventsList,
+        deleteEvent,
+        highlights,
+        addHighlight,
+        updateHighlightsList,
+        deleteHighlight,
+        volunteers,
+        addVolunteer,
+        deleteVolunteer,
+        donations,
+        addDonation,
         updateStats,
         updateSocialLinks,
         updateContactInfo,
