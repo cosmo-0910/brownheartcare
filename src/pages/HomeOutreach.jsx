@@ -86,7 +86,7 @@ export default function HomeOutreach({ setCurrentPage }) {
         </div>
 
         <div className="relative z-10 max-w-[900px] mx-auto px-4 text-center text-white space-y-6 pt-10">
-          <h1 className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight leading-tight text-[#ff4d8d]">
+          <h1 className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight leading-tight text-[#d81b60]">
             We breathe out love for others to inhale
           </h1>
           <p className="text-white/90 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed">
