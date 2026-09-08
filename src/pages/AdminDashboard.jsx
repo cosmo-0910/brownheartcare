@@ -17,6 +17,7 @@ export default function AdminDashboard({
     updateSocialLinks, 
     updateContactInfo, 
     addStoryEntry, 
+    updateStoryEntry,
     deleteStoryEntry,
     donations: ctxDonations,
     volunteers: ctxVolunteers,
@@ -130,13 +131,33 @@ export default function AdminDashboard({
     alert('Contact information updated live!');
   };
 
+  // Editing Story State
+  const [editingStory, setEditingStory] = useState(null);
+
+  const handleEditStoryClick = (story) => {
+    setEditingStory({ ...story });
+  };
+
+  const handleSaveEditedStory = (e) => {
+    e.preventDefault();
+    if (!editingStory || !editingStory.title) return;
+    updateStoryEntry(editingStory.id, {
+      year: editingStory.year,
+      title: editingStory.title,
+      description: editingStory.description,
+      image: editingStory.image
+    });
+    setEditingStory(null);
+    alert('Our Story timeline record updated live!');
+  };
+
   const handleAddStory = (e) => {
     e.preventDefault();
     if (!newStory.title) return;
     addStoryEntry({
       id: `story-${Date.now()}`,
       ...newStory,
-      image: newStory.image || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80'
+      image: newStory.image || '/hero/PHOTO-2026-09-01-13-37-18.jpg'
     });
     setNewStory({ year: new Date().getFullYear().toString(), title: '', description: '', image: '' });
     alert('New Story Record added to Our Story timeline!');
@@ -863,23 +884,100 @@ export default function AdminDashboard({
                 <div className="space-y-3">
                   {(settings?.ourStoryEntries || []).map((st) => (
                     <div key={st.id} className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-start gap-4 text-xs">
-                      <div className="space-y-1">
+                      <div className="space-y-1 flex-1">
                         <span className="bg-[#b0004a] text-white px-2 py-0.5 rounded font-bold text-[10px]">{st.year}</span>
                         <h5 className="font-heading font-bold text-sm text-gray-900">{st.title}</h5>
                         <p className="text-gray-600 leading-relaxed">{st.description}</p>
                       </div>
-                      <button
-                        onClick={() => deleteStoryEntry(st.id)}
-                        className="text-red-600 font-bold hover:underline shrink-0 text-xs p-1"
-                        title="Delete story record"
-                      >
-                        Delete
-                      </button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => handleEditStoryClick(st)}
+                          className="px-3 py-1.5 bg-[#b0004a] text-white rounded-lg font-bold text-xs hover:bg-[#90003b] transition-colors flex items-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-sm">edit</span>
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => deleteStoryEntry(st.id)}
+                          className="p-1.5 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold transition-colors"
+                          title="Delete story record"
+                        >
+                          <span className="material-symbols-outlined text-sm block">delete</span>
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
+
+            {/* EDIT STORY MODAL */}
+            {editingStory && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
+                <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 space-y-4 relative">
+                  <button
+                    onClick={() => setEditingStory(null)}
+                    className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"
+                  >
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
+
+                  <h3 className="font-heading font-bold text-xl text-gray-900 border-b border-gray-100 pb-3">Edit Our Story Timeline Record</h3>
+
+                  <form onSubmit={handleSaveEditedStory} className="space-y-4 text-xs">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block font-semibold text-gray-700 mb-1">Year</label>
+                        <input
+                          type="text"
+                          required
+                          value={editingStory.year}
+                          onChange={(e) => setEditingStory({ ...editingStory, year: e.target.value })}
+                          className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-bold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block font-semibold text-gray-700 mb-1">Record Title</label>
+                        <input
+                          type="text"
+                          required
+                          value={editingStory.title}
+                          onChange={(e) => setEditingStory({ ...editingStory, title: e.target.value })}
+                          className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-bold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Full Story Description</label>
+                      <textarea
+                        rows={4}
+                        required
+                        value={editingStory.description}
+                        onChange={(e) => setEditingStory({ ...editingStory, description: e.target.value })}
+                        className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-medium text-gray-900 focus:bg-white focus:border-[#b0004a] resize-none"
+                      />
+                    </div>
+
+                    <div className="flex gap-2 justify-end pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditingStory(null)}
+                        className="px-4 py-2 rounded-full border border-gray-300 font-semibold text-gray-700 hover:bg-gray-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-6 py-2.5 rounded-full bg-[#b0004a] text-white font-bold hover:bg-[#90003b] shadow-sm"
+                      >
+                        Save Changes Live
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
