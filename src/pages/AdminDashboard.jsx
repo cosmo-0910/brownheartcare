@@ -1,8 +1,38 @@
 import React, { useState } from 'react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 
-export default function AdminDashboard({ setCurrentPage, donations, volunteers, events, highlights, onUpdateEvents, onUpdateHighlights }) {
-  const { settings, updateSettings, updateStats, updateSocialLinks, updateContactInfo, addStoryEntry, deleteStoryEntry } = useSiteSettings();
+export default function AdminDashboard({ 
+  setCurrentPage, 
+  donations: propsDonations, 
+  volunteers: propsVolunteers, 
+  events: propsEvents, 
+  highlights: propsHighlights, 
+  onUpdateEvents: propsOnUpdateEvents, 
+  onUpdateHighlights: propsOnUpdateHighlights 
+}) {
+  const { 
+    settings, 
+    updateSettings, 
+    updateStats, 
+    updateSocialLinks, 
+    updateContactInfo, 
+    addStoryEntry, 
+    deleteStoryEntry,
+    donations: ctxDonations,
+    volunteers: ctxVolunteers,
+    events: ctxEvents,
+    highlights: ctxHighlights,
+    updateEventsList,
+    updateHighlightsList
+  } = useSiteSettings();
+
+  const donations = propsDonations || ctxDonations || [];
+  const volunteers = propsVolunteers || ctxVolunteers || [];
+  const events = propsEvents || ctxEvents || [];
+  const highlights = propsHighlights || ctxHighlights || [];
+
+  const onUpdateEvents = propsOnUpdateEvents || updateEventsList;
+  const onUpdateHighlights = propsOnUpdateHighlights || updateHighlightsList;
 
   const [passcode, setPasscode] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
@@ -18,15 +48,15 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
   const [showLivePreview, setShowLivePreview] = useState(false);
 
   // Content Manager Forms State
-  const [statsForm, setStatsForm] = useState(settings.stats);
-  const [socialsForm, setSocialsForm] = useState(settings.socialLinks);
-  const [contactForm, setContactForm] = useState(settings.contactInfo);
+  const [statsForm, setStatsForm] = useState(settings?.stats || { livesTouched: '0', outreachEvents: '0', activeVolunteers: '0', aidDistributed: '0' });
+  const [socialsForm, setSocialsForm] = useState(settings?.socialLinks || {});
+  const [contactForm, setContactForm] = useState(settings?.contactInfo || {});
   const [brandingForm, setBrandingForm] = useState({
-    orgName: settings.orgName,
-    tagline: settings.tagline,
-    heroTitle: settings.heroTitle,
-    heroSubtitle: settings.heroSubtitle,
-    logo: settings.logo
+    orgName: settings?.orgName || 'Brown Heart Care',
+    tagline: settings?.tagline || '',
+    heroTitle: settings?.heroTitle || '',
+    heroSubtitle: settings?.heroSubtitle || '',
+    logo: settings?.logo || ''
   });
 
   // Story Form State
@@ -828,9 +858,9 @@ export default function AdminDashboard({ setCurrentPage, donations, volunteers, 
 
               {/* Active Story Records List */}
               <div className="space-y-3">
-                <h4 className="font-bold text-xs text-gray-700 uppercase tracking-wider">Current Timeline Stories ({settings.ourStoryEntries.length})</h4>
+                <h4 className="font-bold text-xs text-gray-700 uppercase tracking-wider">Current Timeline Stories ({(settings?.ourStoryEntries || []).length})</h4>
                 <div className="space-y-3">
-                  {settings.ourStoryEntries.map((st) => (
+                  {(settings?.ourStoryEntries || []).map((st) => (
                     <div key={st.id} className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-start gap-4 text-xs">
                       <div className="space-y-1">
                         <span className="bg-[#b0004a] text-white px-2 py-0.5 rounded font-bold text-[10px]">{st.year}</span>

@@ -33,7 +33,22 @@ const defaultSettings = {
     accountNumber: '1009761198',
     accountName: 'Aina Esther Oluwatoyin'
   },
-  ourStoryEntries: []
+  ourStoryEntries: [
+    {
+      id: 'story-2024',
+      year: '2024',
+      title: 'Free Health Screening & Cardiac Care Outreach',
+      description: 'Expanded community medical drives across rural and underserved districts, providing free diagnostic screenings, ECGs, blood pressure checks, and essential medications.',
+      image: '/hero/PHOTO-2026-09-01-13-37-18.jpg'
+    },
+    {
+      id: 'story-2023',
+      year: '2023',
+      title: 'Nutritional Security & Grain Relief Program',
+      description: 'Launched our food distribution initiative delivering nutrient-balanced grain packages and healthy food kits to low-income families and senior citizens.',
+      image: '/hero/PHOTO-2026-09-01-13-37-25.jpg'
+    }
+  ]
 };
 
 const SiteSettingsContext = createContext();

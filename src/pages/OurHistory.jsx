@@ -29,32 +29,44 @@ export default function OurHistory({ setCurrentPage }) {
 
       {/* Dynamic Timeline Section */}
       <section className="pb-24 max-w-[1000px] mx-auto px-4 relative">
-        <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-[#ffd9de] -translate-x-1/2 hidden md:block"></div>
+        {settings.ourStoryEntries && settings.ourStoryEntries.length > 0 ? (
+          <>
+            <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-[#ffd9de] -translate-x-1/2 hidden md:block"></div>
 
-        <div className="space-y-16 relative z-10">
-          {settings.ourStoryEntries.map((story, idx) => {
-            const isEven = idx % 2 === 0;
-            return (
-              <div key={story.id || idx} className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div className={`space-y-3 bg-white rounded-2xl p-8 shadow-sm border-t-4 border-[#b0004a] ${!isEven ? 'order-1 md:order-2' : ''}`}>
-                  <span className="text-xs font-bold text-[#b0004a] block">{story.year} Outreach Record</span>
-                  <h3 className="font-heading font-bold text-xl text-[#1a1c1c]">{story.title}</h3>
-                  <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
-                    {story.description}
-                  </p>
-                </div>
+            <div className="space-y-16 relative z-10">
+              {settings.ourStoryEntries.map((story, idx) => {
+                const isEven = idx % 2 === 0;
+                return (
+                  <div key={story.id || idx} className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div className={`space-y-3 bg-white rounded-2xl p-8 shadow-sm border-t-4 border-[#b0004a] ${!isEven ? 'order-1 md:order-2' : ''}`}>
+                      <span className="text-xs font-bold text-[#b0004a] block">{story.year} Outreach Record</span>
+                      <h3 className="font-heading font-bold text-xl text-[#1a1c1c]">{story.title}</h3>
+                      <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
+                        {story.description}
+                      </p>
+                    </div>
 
-                <div className={`rounded-2xl overflow-hidden shadow-sm h-64 border border-gray-100 ${!isEven ? 'order-2 md:order-1' : ''}`}>
-                  <img 
-                    src={story.image || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80'} 
-                    alt={story.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                    <div className={`rounded-2xl overflow-hidden shadow-sm h-64 border border-gray-100 ${!isEven ? 'order-2 md:order-1' : ''}`}>
+                      <img 
+                        src={story.image || '/hero/PHOTO-2026-09-01-13-37-18.jpg'} 
+                        alt={story.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-16 bg-white rounded-2xl border border-gray-200 p-8 space-y-3">
+            <span className="material-symbols-outlined text-4xl text-[#b0004a]">history_edu</span>
+            <h3 className="font-heading font-bold text-xl text-gray-800">No Timeline Records Published Yet</h3>
+            <p className="text-xs text-gray-500 max-w-md mx-auto">
+              Add story timeline records from the Admin Dashboard to display them live on this history page.
+            </p>
+          </div>
+        )}
       </section>
 
       <footer className="bg-[#e2e2e2] text-gray-700 py-10">
