@@ -1,8 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
+
+const heroImages = [
+  '/hero/PHOTO-2026-09-01-13-37-18.jpg',
+  '/hero/PHOTO-2026-09-01-13-37-25.jpg',
+  '/hero/PHOTO-2026-09-01-13-37-28.jpg',
+  '/hero/PHOTO-2026-09-01-13-37-31.jpg',
+  '/hero/PHOTO-2026-09-01-13-37-32.jpg',
+  '/hero/PHOTO-2026-09-01-13-45-14.jpg',
+];
 
 export default function HomeImpact({ setCurrentPage }) {
   const { settings } = useSiteSettings();
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
 
   const navTo = (page) => {
     setCurrentPage(page);
@@ -13,13 +30,35 @@ export default function HomeImpact({ setCurrentPage }) {
     <div className="pt-16 animate-fadeIn font-sans bg-[#f9f9f9] text-[#1a1c1c]">
       {/* Hero Section */}
       <section className="relative min-h-[580px] flex items-center pt-16 pb-20 overflow-hidden">
+        {/* Hero Background Slideshow */}
         <div className="absolute inset-0 z-0">
-          <div 
-            className="w-full h-full bg-cover bg-center opacity-25"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80')`
-            }}
-          />
+          {heroImages.map((imgSrc, index) => (
+            <div
+              key={imgSrc}
+              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
+                index === currentSlide ? 'opacity-35' : 'opacity-0'
+              }`}
+              style={{
+                backgroundImage: `url('${imgSrc}')`
+              }}
+            />
+          ))}
+          {/* Subtle gradient overlay to keep readability high */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#f9f9f9]/90 via-[#f9f9f9]/70 to-[#f9f9f9]/40 sm:to-transparent" />
+          
+          {/* Slideshow Indicators */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+            {heroImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                aria-label={`Go to slide ${index + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === currentSlide ? 'w-6 bg-[#b0004a]' : 'w-2 bg-gray-400/50 hover:bg-gray-400'
+                }`}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="relative z-10 max-w-[1100px] mx-auto px-4 w-full flex flex-col lg:flex-row items-center justify-between gap-12">
