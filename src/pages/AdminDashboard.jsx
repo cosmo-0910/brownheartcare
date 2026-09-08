@@ -255,6 +255,7 @@ export default function AdminDashboard({
       typeLabel: 'Community Outreach',
       status: 'Upcoming',
       date: '',
+      dateTimeRaw: '',
       location: '',
       desc: '',
       img: '',
@@ -931,14 +932,29 @@ export default function AdminDashboard({
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">Date & Time</label>
+                    <label className="block font-semibold text-gray-700 mb-1">Select Date & Time</label>
                     <input
-                      type="text"
+                      type="datetime-local"
                       required
-                      placeholder="Oct 15, 2025 • 9:00 AM"
-                      value={newEvent.date}
-                      onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
-                      className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
+                      value={newEvent.dateTimeRaw || ''}
+                      onChange={(e) => {
+                        const rawVal = e.target.value;
+                        let formattedDate = rawVal;
+                        if (rawVal) {
+                          const d = new Date(rawVal);
+                          formattedDate = d.toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          }) + ' • ' + d.toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                          });
+                        }
+                        setNewEvent({ ...newEvent, dateTimeRaw: rawVal, date: formattedDate });
+                      }}
+                      className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a] font-sans text-xs"
                     />
                   </div>
                   <div>
