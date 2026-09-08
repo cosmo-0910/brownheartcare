@@ -1,8 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+const heroImages = [
+  '/hero/PHOTO-2026-09-01-13-37-18.jpg',
+  '/hero/PHOTO-2026-09-01-13-37-25.jpg',
+  '/hero/PHOTO-2026-09-01-13-37-28.jpg',
+  '/hero/PHOTO-2026-09-01-13-37-31.jpg',
+  '/hero/PHOTO-2026-09-01-13-37-32.jpg',
+  '/hero/PHOTO-2026-09-01-13-45-14.jpg',
+];
 
 export default function HomeOutreach({ setCurrentPage }) {
   const [activeMediaTab, setActiveMediaTab] = useState('all');
   const [playingVideo, setPlayingVideo] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
 
   const navTo = (page) => {
     setCurrentPage(page);
@@ -54,12 +71,17 @@ export default function HomeOutreach({ setCurrentPage }) {
       {/* Hero Banner Section */}
       <section className="relative min-h-[620px] lg:h-[700px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <div 
-            className="w-full h-full bg-cover bg-center"
-            style={{
-              backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuARLBcWiP_X08ySCeElYpGbtQNW8xJBiMhkQl-nFWSkhyvrczHjzSxUmEi5ZUCvKm9CV-iSO09siSufmkrcoQPQyhiMQLHLZCBRYY83buNiq5Qip0Gaux1Tn04AZQDAT53H7-YTeBpJmXZBK_68TzXkrgPleHvL94k8IPy9zsVxyoMR7ijOCIfCi-2s7ZQ2-X2bI0nUrrzFHV0-9iDdPNId4z1VkwJzg92t-KcHDnXHLYt9k8_P4g7-BQ')`
-            }}
-          />
+          {heroImages.map((imgSrc, index) => (
+            <div 
+              key={imgSrc}
+              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
+                index === currentSlide ? 'opacity-100' : 'opacity-0'
+              }`}
+              style={{
+                backgroundImage: `url('${imgSrc}')`
+              }}
+            />
+          ))}
           <div className="absolute inset-0 bg-black/55"></div>
         </div>
 
@@ -89,9 +111,16 @@ export default function HomeOutreach({ setCurrentPage }) {
 
           {/* Pagination Indicators */}
           <div className="flex justify-center items-center gap-2 pt-12">
-            <span className="w-8 h-1 bg-white/40 rounded-full"></span>
-            <span className="w-8 h-1 bg-[#b0004a] rounded-full"></span>
-            <span className="w-8 h-1 bg-white/40 rounded-full"></span>
+            {heroImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                aria-label={`Go to slide ${index + 1}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  index === currentSlide ? 'w-10 bg-[#b0004a]' : 'w-6 bg-white/40 hover:bg-white/70'
+                }`}
+              />
+            ))}
           </div>
         </div>
       </section>
