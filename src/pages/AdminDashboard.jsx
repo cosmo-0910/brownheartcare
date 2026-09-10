@@ -24,6 +24,8 @@ export default function AdminDashboard({
     events: ctxEvents,
     highlights: ctxHighlights,
     updateEventsList,
+    updateSingleEvent,
+    deleteVolunteer,
     updateHighlightsList
   } = useSiteSettings();
 
@@ -44,9 +46,21 @@ export default function AdminDashboard({
   // Selected Item Modal States
   const [selectedVolunteer, setSelectedVolunteer] = useState(null);
   const [selectedDonor, setSelectedDonor] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
   const [invitationMessage, setInvitationMessage] = useState('');
   const [invitationSent, setInvitationSent] = useState(false);
   const [showLivePreview, setShowLivePreview] = useState(false);
+
+  // Safe Date Formatting Helper to prevent crashes from bad date strings
+  const safeFormatDate = (val) => {
+    if (!val) return 'Recent';
+    try {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? String(val) : d.toLocaleDateString();
+    } catch (e) {
+      return String(val);
+    }
+  };
 
   // Content Manager Forms State
   const [statsForm, setStatsForm] = useState(settings?.stats || { livesTouched: '0', outreachEvents: '0', activeVolunteers: '0', aidDistributed: '0' });
@@ -68,7 +82,7 @@ export default function AdminDashboard({
     image: ''
   });
 
-  // New Event Form State with Status & Multiple Gallery Files
+  // New Event Form State with Status, Full Background Details & Multiple Gallery Files
   const [newEvent, setNewEvent] = useState({
     title: '',
     typeLabel: 'Community Outreach',
@@ -76,6 +90,7 @@ export default function AdminDashboard({
     date: '',
     location: '',
     desc: '',
+    fullDetails: '',
     img: '',
     galleryPhotos: [],
     videoUrl: '',
@@ -284,13 +299,69 @@ export default function AdminDashboard({
     onUpdateHighlights(updated);
   };
 
+  const handleEventPosterUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewEvent(prev => ({ ...prev, img: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEditEventPosterUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingEvent(prev => ({ ...prev, img: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEditEventGalleryUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      const readers = files.map(file => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(readers).then(images => {
+        setEditingEvent(prev => ({
+          ...prev,
+          galleryPhotos: [...(prev.galleryPhotos || []), ...images]
+        }));
+      });
+    }
+  };
+
+  const handleSaveEditedEvent = (e) => {
+    e.preventDefault();
+    if (!editingEvent || !editingEvent.title) return;
+    if (updateSingleEvent) {
+      updateSingleEvent(editingEvent.id, editingEvent);
+    } else {
+      const updated = events.map(ev => ev.id === editingEvent.id ? editingEvent : ev);
+      onUpdateEvents(updated);
+    }
+    setEditingEvent(null);
+    alert('Outreach event updated live on website!');
+  };
+
   const handleAddEvent = (e) => {
     e.preventDefault();
     if (!newEvent.title) return;
     const item = {
-      id: Date.now(),
+      id: `evt-${Date.now()}`,
       ...newEvent,
-      img: newEvent.img || 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80'
+      img: newEvent.img || '/hero/PHOTO-2026-09-01-13-37-18.jpg',
+      fullDetails: newEvent.fullDetails || newEvent.desc
     };
     onUpdateEvents([item, ...events]);
     setNewEvent({
@@ -301,6 +372,7 @@ export default function AdminDashboard({
       dateTimeRaw: '',
       location: '',
       desc: '',
+      fullDetails: '',
       img: '',
       galleryPhotos: [],
       videoUrl: '',
@@ -1146,7 +1218,7 @@ export default function AdminDashboard({
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Free Health Screening Day"
+                    placeholder="e.g. Free Health Screening & Medical Drive"
                     value={newEvent.title}
                     onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                     className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
@@ -1169,16 +1241,45 @@ export default function AdminDashboard({
 
                   <div>
                     <label className="block font-semibold text-gray-700 mb-1">Category Badge</label>
-                    <select
+                    <input
+                      type="text"
+                      placeholder="e.g. Medical Screening, Food Drive..."
                       value={newEvent.typeLabel}
                       onChange={(e) => setNewEvent({ ...newEvent, typeLabel: e.target.value })}
                       className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
-                    >
-                      <option value="Community Outreach">Community Outreach</option>
-                      <option value="Food & Aid Drive">Food & Aid Drive</option>
-                      <option value="Medical Screening">Medical Screening</option>
-                    </select>
+                    />
                   </div>
+                </div>
+
+                {/* Event Poster Photo Upload */}
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Main Event Poster / Image</label>
+                  <div className="flex items-center gap-2">
+                    <label className="cursor-pointer px-3 py-2 bg-[#eee] border border-gray-300 rounded-xl hover:bg-gray-200 flex items-center gap-1.5 font-semibold text-gray-700 shrink-0">
+                      <span className="material-symbols-outlined text-base text-[#b0004a]">upload_file</span>
+                      <span>Upload Poster</span>
+                      <input type="file" accept="image/*" onChange={handleEventPosterUpload} className="hidden" />
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Or paste poster URL..."
+                      value={newEvent.img}
+                      onChange={(e) => setNewEvent({ ...newEvent, img: e.target.value })}
+                      className="flex-1 bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
+                    />
+                  </div>
+                  {newEvent.img && (
+                    <div className="mt-2 relative w-24 h-24 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                      <img src={newEvent.img} alt="Poster Preview" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setNewEvent({ ...newEvent, img: '' })}
+                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-red-600"
+                      >
+                        <span className="material-symbols-outlined text-xs block">close</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
@@ -1222,7 +1323,30 @@ export default function AdminDashboard({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Upload Multiple Gallery Photos (Select files)</label>
+                  <label className="block font-semibold text-gray-700 mb-1">Short Card Summary (Homepage preview)</label>
+                  <textarea
+                    rows={2}
+                    required
+                    placeholder="Brief 1-2 sentence summary of this outreach event..."
+                    value={newEvent.desc}
+                    onChange={(e) => setNewEvent({ ...newEvent, desc: e.target.value })}
+                    className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a] resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Full Program Details & Background (Shown on "Learn More")</label>
+                  <textarea
+                    rows={4}
+                    placeholder="Write detailed program objectives, schedule, requirements, medical services offered, etc..."
+                    value={newEvent.fullDetails}
+                    onChange={(e) => setNewEvent({ ...newEvent, fullDetails: e.target.value })}
+                    className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a] resize-none font-sans"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Upload Gallery Photos</label>
                   <input
                     type="file"
                     multiple
@@ -1239,18 +1363,6 @@ export default function AdminDashboard({
                   )}
                 </div>
 
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Description</label>
-                  <textarea
-                    rows={3}
-                    required
-                    placeholder="Provide details about this outreach event..."
-                    value={newEvent.desc}
-                    onChange={(e) => setNewEvent({ ...newEvent, desc: e.target.value })}
-                    className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a] resize-none"
-                  />
-                </div>
-
                 <button
                   type="submit"
                   className="w-full py-3 rounded-full bg-[#b0004a] text-white font-bold text-xs shadow-md hover:bg-[#90003b] transition-all"
@@ -1260,42 +1372,56 @@ export default function AdminDashboard({
               </form>
             </div>
 
-            {/* List of Active Events with Delete Action */}
+            {/* List of Active Events with Edit & Delete Action */}
             <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
               <h3 className="font-heading font-bold text-lg text-gray-900">Published Outreach Events ({events.length})</h3>
               <div className="space-y-4">
                 {events.map((evt, idx) => (
                   <div key={idx} className="p-4 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="space-y-1.5 text-xs">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
-                          evt.status === 'Upcoming' ? 'bg-blue-100 text-blue-800' :
-                          evt.status === 'Current' ? 'bg-emerald-100 text-emerald-800 animate-pulse' :
-                          'bg-gray-200 text-gray-700'
-                        }`}>
-                          {evt.status || 'Upcoming'} Event
-                        </span>
-                        <span className="bg-[#ffd9de] text-[#b0004a] px-2.5 py-0.5 rounded-full font-bold text-[10px]">
-                          {evt.typeLabel}
-                        </span>
+                    <div className="flex items-start gap-3 flex-1">
+                      {evt.img && (
+                        <div className="w-20 h-20 rounded-xl overflow-hidden border border-gray-200 shrink-0 bg-gray-100">
+                          <img src={evt.img} alt={evt.title} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <div className="space-y-1 text-xs">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                            evt.status === 'Upcoming' ? 'bg-blue-100 text-blue-800' :
+                            evt.status === 'Current' ? 'bg-emerald-100 text-emerald-800 animate-pulse' :
+                            'bg-gray-200 text-gray-700'
+                          }`}>
+                            {evt.status || 'Upcoming'} Event
+                          </span>
+                          <span className="bg-[#ffd9de] text-[#b0004a] px-2.5 py-0.5 rounded-full font-bold text-[10px]">
+                            {evt.typeLabel}
+                          </span>
+                        </div>
+                        <h4 className="font-heading font-bold text-base text-gray-900">{evt.title}</h4>
+                        <p className="text-gray-500 font-semibold">{evt.date} • {evt.location}</p>
+                        <p className="text-gray-600 line-clamp-2">{evt.desc}</p>
                       </div>
-                      <h4 className="font-heading font-bold text-base text-gray-900">{evt.title}</h4>
-                      <p className="text-gray-500">{evt.date} • {evt.location}</p>
-                      <p className="text-gray-600 line-clamp-2">{evt.desc}</p>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
                       <button
+                        onClick={() => setEditingEvent({ ...evt })}
+                        className="px-3 py-1.5 bg-[#b0004a] text-white rounded-lg font-bold text-xs hover:bg-[#90003b] transition-colors flex items-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-sm">edit</span>
+                        <span>Edit</span>
+                      </button>
+                      <button
                         onClick={() => handleToggleEventFeatured(evt.id)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
-                          evt.featured ? 'bg-[#b0004a] text-white' : 'bg-gray-200 text-gray-700'
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                          evt.featured ? 'bg-amber-600 text-white' : 'bg-gray-200 text-gray-700'
                         }`}
                       >
                         {evt.featured ? 'Featured' : 'Make Featured'}
                       </button>
                       <button
                         onClick={() => handleDeleteEvent(evt.id)}
-                        className="p-1.5 bg-red-100 text-red-700 hover:bg-red-200 rounded-full text-xs font-bold transition-colors"
+                        className="p-1.5 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold transition-colors"
                         title="Delete Event"
                       >
                         <span className="material-symbols-outlined text-base block">delete</span>
@@ -1305,6 +1431,169 @@ export default function AdminDashboard({
                 ))}
               </div>
             </div>
+
+            {/* EDIT EVENT MODAL */}
+            {editingEvent && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
+                <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-gray-200 space-y-4 relative max-h-[90vh] overflow-y-auto">
+                  <button
+                    onClick={() => setEditingEvent(null)}
+                    className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"
+                  >
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
+
+                  <h3 className="font-heading font-bold text-xl text-gray-900 border-b border-gray-100 pb-3">Edit Outreach Event & Program Details</h3>
+
+                  <form onSubmit={handleSaveEditedEvent} className="space-y-4 text-xs">
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Event Title</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingEvent.title || ''}
+                        onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
+                        className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-bold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-semibold text-gray-700 mb-1">Event Status</label>
+                        <select
+                          value={editingEvent.status || 'Upcoming'}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, status: e.target.value })}
+                          className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-bold text-[#b0004a] focus:bg-white focus:border-[#b0004a]"
+                        >
+                          <option value="Upcoming">Upcoming Event</option>
+                          <option value="Current">Current / Ongoing Event</option>
+                          <option value="Past">Past Event</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-gray-700 mb-1">Category Badge</label>
+                        <input
+                          type="text"
+                          value={editingEvent.typeLabel || ''}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, typeLabel: e.target.value })}
+                          className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-semibold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Main Event Poster / Image</label>
+                      <div className="flex items-center gap-2">
+                        <label className="cursor-pointer px-3 py-2 bg-[#eee] border border-gray-300 rounded-xl hover:bg-gray-200 flex items-center gap-1.5 font-semibold text-gray-700 shrink-0">
+                          <span className="material-symbols-outlined text-base text-[#b0004a]">upload_file</span>
+                          <span>Upload New Poster</span>
+                          <input type="file" accept="image/*" onChange={handleEditEventPosterUpload} className="hidden" />
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Or image URL..."
+                          value={editingEvent.img || ''}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, img: e.target.value })}
+                          className="flex-1 bg-[#eee] p-2.5 rounded-xl border border-transparent font-medium text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                        />
+                      </div>
+                      {editingEvent.img && (
+                        <div className="mt-2 relative w-28 h-28 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                          <img src={editingEvent.img} alt="Poster" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setEditingEvent({ ...editingEvent, img: '' })}
+                            className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-red-600"
+                          >
+                            <span className="material-symbols-outlined text-xs block">close</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-semibold text-gray-700 mb-1">Date & Time Display</label>
+                        <input
+                          type="text"
+                          required
+                          value={editingEvent.date || ''}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, date: e.target.value })}
+                          className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-semibold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-gray-700 mb-1">Location / Venue</label>
+                        <input
+                          type="text"
+                          required
+                          value={editingEvent.location || ''}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, location: e.target.value })}
+                          className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-semibold text-gray-900 focus:bg-white focus:border-[#b0004a]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Short Card Summary</label>
+                      <textarea
+                        rows={2}
+                        required
+                        value={editingEvent.desc || ''}
+                        onChange={(e) => setEditingEvent({ ...editingEvent, desc: e.target.value })}
+                        className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-medium text-gray-900 focus:bg-white focus:border-[#b0004a] resize-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Full Program Details & Background (Shown on "Learn More")</label>
+                      <textarea
+                        rows={5}
+                        placeholder="Write comprehensive program details, schedule, medical services offered, etc..."
+                        value={editingEvent.fullDetails || editingEvent.desc || ''}
+                        onChange={(e) => setEditingEvent({ ...editingEvent, fullDetails: e.target.value })}
+                        className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-sans text-gray-900 focus:bg-white focus:border-[#b0004a] resize-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-1">Add Gallery Photos</label>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleEditEventGalleryUpload}
+                        className="text-xs text-gray-600 w-full mb-1"
+                      />
+                      {editingEvent.galleryPhotos && editingEvent.galleryPhotos.length > 0 && (
+                        <div className="flex gap-1 overflow-x-auto py-1">
+                          {editingEvent.galleryPhotos.map((img, idx) => (
+                            <img key={idx} src={img} alt="Gallery" className="w-12 h-12 rounded object-cover border border-[#b0004a]" />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 justify-end pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditingEvent(null)}
+                        className="px-4 py-2 rounded-full border border-gray-300 font-semibold text-gray-700 hover:bg-gray-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-6 py-2.5 rounded-full bg-[#b0004a] text-white font-bold hover:bg-[#90003b] shadow-sm"
+                      >
+                        Save Changes Live
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1599,9 +1888,14 @@ export default function AdminDashboard({
                 </div>
               )}
               <div className="flex-1">
-                <h3 className="font-heading font-bold text-xl text-gray-900">{selectedVolunteer.full_name || selectedVolunteer.name}</h3>
-                <p className="text-xs font-bold text-[#b0004a]">{selectedVolunteer.occupation || 'Volunteer'}</p>
-                <p className="text-xs text-gray-500">Submitted: {new Date(selectedVolunteer.created_at || Date.now()).toLocaleDateString()}</p>
+                <h3 className="font-heading font-bold text-xl text-gray-900">{selectedVolunteer.full_name || selectedVolunteer.name || 'Volunteer Profile'}</h3>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <span className="text-xs font-bold text-[#b0004a]">{selectedVolunteer.occupation || 'Volunteer'}</span>
+                  <span className="bg-[#ffd9de] text-[#b0004a] px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                    {selectedVolunteer.event_title || selectedVolunteer.eventTitle || 'General Outreach Volunteer'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Submitted: {safeFormatDate(selectedVolunteer.created_at)}</p>
               </div>
               <button
                 onClick={() => handleDeleteVolunteer(selectedVolunteer.id)}
@@ -1615,11 +1909,11 @@ export default function AdminDashboard({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="bg-gray-50 p-3.5 rounded-xl space-y-1">
                 <span className="text-gray-400 font-bold block text-[10px]">EMAIL ADDRESS</span>
-                <p className="font-semibold text-gray-800">{selectedVolunteer.email}</p>
+                <p className="font-semibold text-gray-800">{selectedVolunteer.email || 'N/A'}</p>
               </div>
               <div className="bg-gray-50 p-3.5 rounded-xl space-y-1">
                 <span className="text-gray-400 font-bold block text-[10px]">PHONE NUMBER</span>
-                <p className="font-semibold text-gray-800">{selectedVolunteer.phone}</p>
+                <p className="font-semibold text-gray-800">{selectedVolunteer.phone || 'N/A'}</p>
               </div>
               <div className="bg-gray-50 p-3.5 rounded-xl space-y-1 sm:col-span-2">
                 <span className="text-gray-400 font-bold block text-[10px]">DETAILED RESIDENTIAL HOME ADDRESS</span>
@@ -1630,12 +1924,12 @@ export default function AdminDashboard({
                 <p className="font-semibold text-gray-800">{selectedVolunteer.occupation || 'N/A'}</p>
               </div>
               <div className="bg-gray-50 p-3.5 rounded-xl space-y-1">
-                <span className="text-gray-400 font-bold block text-[10px]">QUALIFICATIONS & SKILLS</span>
-                <p className="font-semibold text-gray-800">{selectedVolunteer.medical_qualifications || selectedVolunteer.qualifications || 'RN Nurse / Logistics'}</p>
+                <span className="text-gray-400 font-bold block text-[10px]">PROFESSION & KEY SKILLS</span>
+                <p className="font-semibold text-gray-800">{selectedVolunteer.qualifications || selectedVolunteer.medical_qualifications || 'General volunteer skills'}</p>
               </div>
               <div className="bg-gray-50 p-3.5 rounded-xl space-y-1 sm:col-span-2">
                 <span className="text-gray-400 font-bold block text-[10px]">EMERGENCY CONTACT PERSON</span>
-                <p className="font-semibold text-gray-800">{selectedVolunteer.emergency_contact || selectedVolunteer.emergencyContact || 'Family Contact'}</p>
+                <p className="font-semibold text-gray-800">{selectedVolunteer.emergency_contact || selectedVolunteer.emergencyContact || 'N/A'}</p>
               </div>
               {selectedVolunteer.motivation && (
                 <div className="bg-gray-50 p-3.5 rounded-xl space-y-1 sm:col-span-2">

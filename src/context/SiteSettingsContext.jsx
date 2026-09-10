@@ -145,6 +145,13 @@ export function SiteSettingsProvider({ children }) {
     updateSettings({ events: updatedEvents });
   };
 
+  const updateSingleEvent = (eventId, updatedFields) => {
+    const updated = events.map(e => e.id === eventId ? { ...e, ...updatedFields } : e);
+    setEvents(updated);
+    localStorage.setItem('bhc_events', JSON.stringify(updated));
+    updateSettings({ events: updated });
+  };
+
   const deleteEvent = (eventId) => {
     const updated = events.filter(e => e.id !== eventId);
     setEvents(updated);
@@ -235,6 +242,7 @@ export function SiteSettingsProvider({ children }) {
         events,
         addEvent,
         updateEventsList,
+        updateSingleEvent,
         deleteEvent,
         highlights,
         addHighlight,
