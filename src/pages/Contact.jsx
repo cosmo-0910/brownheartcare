@@ -27,7 +27,7 @@ export default function Contact() {
           Contact Support & HQ
         </h1>
         <p className="text-secondary text-base leading-relaxed">
-          Have questions about medical outreach assistance, volunteer programs, donations, or corporate partnerships? Reach out to our dedicated foundation team.
+          Have questions about community outreach assistance, volunteer programs, donations, or corporate partnerships? Reach out to our dedicated foundation team.
         </p>
       </section>
 
@@ -108,7 +108,7 @@ export default function Contact() {
                   className="w-full bg-surface-container border border-transparent rounded-xl py-3 px-4 text-xs text-on-surface focus:outline-none focus:border-primary focus:bg-white transition-all"
                 >
                   <option value="general">General Inquiry</option>
-                  <option value="patient">Patient Assistance / Surgery Subsidy Application</option>
+                  <option value="beneficiary">beneficiary Assistance / relief fund Subsidy Application</option>
                   <option value="donor">Donation & Tax Receipt Support</option>
                   <option value="corporate">Corporate Partnership & Sponsorship</option>
                   <option value="media">Media & Press</option>

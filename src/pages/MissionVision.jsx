@@ -9,17 +9,17 @@ export default function MissionVision({ setCurrentPage, openDonateModal, openVol
   const values = [
     {
       title: 'Compassionate Care First',
-      desc: 'Treating every patient and community member with deep empathy, dignity, and personalized attention regardless of social or economic status.',
+      desc: 'Treating every beneficiary and community member with deep empathy, dignity, and personalized attention regardless of social or economic status.',
       icon: 'volunteer_activism'
     },
     {
-      title: 'Medical Integrity & Excellence',
-      desc: 'Upholding strict medical standards in all mobile screenings, diagnostic tests, and surgical partnerships.',
+      title: 'support Integrity & Excellence',
+      desc: 'Upholding strict support standards in all mobile screenings, assessment tests, and relief partnerships.',
       icon: 'verified'
     },
     {
       title: 'Nutritional Security Equity',
-      desc: 'Acknowledging that good cardiovascular health requires reliable access to heart-healthy, wholesome food (SDG 2).',
+      desc: 'Acknowledging that good community well-being requires reliable access to heart-healthy, wholesome food (SDG 2).',
       icon: 'restaurant'
     },
     {
@@ -40,7 +40,7 @@ export default function MissionVision({ setCurrentPage, openDonateModal, openVol
           Mission, Vision & Core Values
         </h1>
         <p className="text-secondary text-base max-w-2xl mx-auto leading-relaxed">
-          The foundational principles that guide every medical outreach, donation spent, and patient served.
+          The foundational principles that guide every community outreach, donation spent, and beneficiary served.
         </p>
       </section>
 
@@ -54,7 +54,7 @@ export default function MissionVision({ setCurrentPage, openDonateModal, openVol
             </div>
             <h2 className="font-heading font-bold text-2xl text-on-surface mb-4">Our Mission</h2>
             <p className="text-on-surface-variant text-base leading-relaxed">
-              To alleviate cardiovascular suffering and promote holistic community well-being by providing accessible heart health screenings, vital nutritional resources, and subsidized surgical interventions to those who need it most.
+              To alleviate community suffering and promote holistic community well-being by providing accessible well-being screenings, vital nutritional resources, and subsidized relief interventions to those who need it most.
             </p>
           </div>
 
@@ -65,7 +65,7 @@ export default function MissionVision({ setCurrentPage, openDonateModal, openVol
             </div>
             <h2 className="font-heading font-bold text-2xl text-on-surface mb-4">Our Vision</h2>
             <p className="text-on-surface-variant text-base leading-relaxed">
-              A world where every individual, regardless of wealth or geography, has access to quality cardiac care and nutritional security, creating resilient and vibrant communities anchored in health and dignity.
+              A world where every individual, regardless of wealth or geography, has access to quality community care and nutritional security, creating resilient and vibrant communities anchored in health and dignity.
             </p>
           </div>
         </div>
@@ -98,7 +98,7 @@ export default function MissionVision({ setCurrentPage, openDonateModal, openVol
         <div className="bg-gradient-to-r from-primary to-primary-container rounded-3xl p-10 text-white space-y-6 shadow-xl">
           <h2 className="font-heading font-extrabold text-3xl">Partner With Our Mission</h2>
           <p className="text-white/90 text-sm max-w-xl mx-auto">
-            Whether as a financial donor, medical volunteer, or corporate sponsor, your partnership makes health equity possible.
+            Whether as a financial donor, support volunteer, or corporate sponsor, your partnership makes health equity possible.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <button

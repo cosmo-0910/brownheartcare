@@ -6,7 +6,7 @@ const defaultSettings = {
   orgName: "Brown Heart Care",
   tagline: "We breathe out love for others to inhale",
   heroTitle: "Touching Lives, Restoring Hope for Underserved Communities",
-  heroSubtitle: "We are a dedicated outreach foundation providing free health screenings, food, clothing, and essential care to the poor and vulnerable.",
+  heroSubtitle: "We are a dedicated outreach foundation providing free needs assessments, food, clothing, and essential care to the poor and vulnerable.",
   stats: {
     livesTouched: '0',
     outreachEvents: '0',
@@ -37,8 +37,8 @@ const defaultSettings = {
     {
       id: 'story-2024',
       year: '2024',
-      title: 'Free Health Screening & Cardiac Care Outreach',
-      description: 'Expanded community medical drives across rural and underserved districts, providing free diagnostic screenings, ECGs, blood pressure checks, and essential medications.',
+      title: 'Free needs assessment & community care Outreach',
+      description: 'Expanded community outreach drives across rural and underserved districts, providing free assessment screenings, evaluations, wellness checks, and essential relief supplies.',
       image: '/hero/PHOTO-2026-09-01-13-37-18.jpg'
     },
     {

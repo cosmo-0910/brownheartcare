@@ -140,7 +140,7 @@ export default function HomeImpact({ setCurrentPage }) {
               </div>
               <h3 className="font-heading font-bold text-xl text-[#1a1c1c]">Our Mission</h3>
               <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
-                To alleviate suffering and promote holistic well-being by providing accessible health screening support, vital nutritional resources, and compassionate community outreach to the poor and vulnerable.
+                To alleviate suffering and promote holistic well-being by providing accessible needs assessment support, vital nutritional resources, and compassionate community outreach to the poor and vulnerable.
               </p>
             </div>
 
@@ -151,7 +151,7 @@ export default function HomeImpact({ setCurrentPage }) {
               </div>
               <h3 className="font-heading font-bold text-xl text-[#1a1c1c]">Our Vision</h3>
               <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
-                A world where every underserved individual has access to essential health screening and nutrition, fostering resilient, vibrant communities built on care and dignity.
+                A world where every underserved individual has access to essential needs assessment and nutrition, fostering resilient, vibrant communities built on care and dignity.
               </p>
             </div>
           </div>

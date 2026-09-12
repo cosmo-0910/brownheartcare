@@ -31,14 +31,14 @@ export default function Privacy() {
         <section className="space-y-3">
           <h2 className="font-heading font-bold text-xl text-on-surface">3. Financial Transparency & Audit Reports</h2>
           <p>
-            As a registered NGO, our annual financial statements undergo independent external auditing. 88% of all funds raised directly fund patient surgeries, mobile clinics, and nutrition boxes. 12% covers essential administrative compliance and operational support.
+            As a registered NGO, our annual financial statements undergo independent external auditing. 88% of all funds raised directly fund beneficiary relief funds, mobile centers, and nutrition boxes. 12% covers essential administrative compliance and operational support.
           </p>
         </section>
 
         <section className="space-y-3">
-          <h2 className="font-heading font-bold text-xl text-on-surface">4. Patient Rights & Privacy</h2>
+          <h2 className="font-heading font-bold text-xl text-on-surface">4. beneficiary Rights & Privacy</h2>
           <p>
-            Patient medical records and screening results gathered during mobile outreaches are strictly protected under medical confidentiality laws and HIPAA standards.
+            beneficiary beneficiary records and screening results gathered during mobile outreaches are strictly protected under support confidentiality laws and privacy standards.
           </p>
         </section>
       </div>

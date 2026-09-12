@@ -22,10 +22,10 @@ export default function DonationModal({ isOpen, onClose }) {
 
   const getImpactMessage = (val) => {
     const num = Number(val) || 0;
-    if (num < 30) return `Your $${num} gift provides essential heart health vitamins & nutrition for 2 children.`;
-    if (num < 75) return `Your $${num} gift provides a comprehensive cardiac health screening & diagnostic test.`;
-    if (num < 150) return `Your $${num} gift covers emergency heart medication for a patient in critical need.`;
-    return `Your $${num} gift directly subsidizes life-saving cardiac procedure costs for low-income patients.`;
+    if (num < 30) return `Your $${num} gift provides essential well-being vitamins & nutrition for 2 children.`;
+    if (num < 75) return `Your $${num} gift provides a comprehensive welfare needs assessment & assessment test.`;
+    if (num < 150) return `Your $${num} gift covers emergency heart relief supply for a beneficiary in critical need.`;
+    return `Your $${num} gift directly subsidizes life-saving welfare procedure costs for low-income beneficiaries.`;
   };
 
   const currentAmount = customAmount ? Number(customAmount) : amount;
@@ -82,7 +82,7 @@ export default function DonationModal({ isOpen, onClose }) {
               </div>
               <div>
                 <h3 className="font-heading font-bold text-xl text-on-surface">Make a Fast Donation</h3>
-                <p className="text-xs text-secondary">Every dollar directly fuels our medical & food outreach.</p>
+                <p className="text-xs text-secondary">Every dollar directly fuels our support & food outreach.</p>
               </div>
             </div>
 

@@ -84,7 +84,7 @@ export default function Donate({ setCurrentPage, onAddDonation }) {
             <div className="rounded-2xl overflow-hidden shadow-sm h-64 md:h-80 border border-gray-100">
               <img 
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDF3tpnGHsFdJdmNNm3OM3gJaivPTcZg0SfZYxx0BUJydqSEKw4uxQrWM2Yo92CzsWFrMZAKCgQpIE43p0tSs2Gp0SNqJxIHGZ59TrmD22LN3e5Furl56eRWjYPuKjHipBl8ntmp10qxE-A_J51-mXBXNbE8QhM5rwZ_-8vg6qh6pcj2aaQJeMmskt5oZO92Q_dXGor8lKGXAf-stXzzFwKgDEo7Huga2FWWvYG-1W2b7SDhWy2ysHstQ" 
-                alt="Volunteer checking patient blood pressure"
+                alt="Volunteer checking beneficiary wellness"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -345,7 +345,7 @@ export default function Donate({ setCurrentPage, onAddDonation }) {
 
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-[#ffd9de] text-[#b0004a] flex items-center justify-center">
-                <span className="material-symbols-outlined text-2xl">medical_services</span>
+                <span className="material-symbols-outlined text-2xl">volunteer_activism</span>
               </div>
               <h4 className="font-heading font-bold text-base text-[#1a1c1c]">Good Health</h4>
               <p className="text-gray-500 text-xs">
@@ -371,8 +371,8 @@ export default function Donate({ setCurrentPage, onAddDonation }) {
                 <h3 className="font-heading font-bold text-base text-[#1a1c1c]">Foundation HQ</h3>
                 <p className="text-xs text-gray-600 leading-relaxed">
                   Brown's Heart Care Foundation<br />
-                  124 Heart Health Boulevard, Suite 400<br />
-                  Medical District, NY 10021
+                  124 well-being Boulevard, Suite 400<br />
+                  support District, NY 10021
                 </p>
               </div>
 
@@ -425,7 +425,7 @@ export default function Donate({ setCurrentPage, onAddDonation }) {
                     >
                       <option value="donation_receipt">Tax Receipt & Donation Confirmation</option>
                       <option value="corporate">Corporate Sponsorship & Matching</option>
-                      <option value="in_kind">In-Kind Medical Supply Donation</option>
+                      <option value="in_kind">In-Kind support Supply Donation</option>
                       <option value="general">General Support</option>
                     </select>
                   </div>

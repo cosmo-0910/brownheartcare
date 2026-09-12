@@ -9,28 +9,28 @@ export default function WaysToGive({ setCurrentPage, openDonateModal, openVolunt
   const ways = [
     {
       title: 'One-Time Heart Support',
-      desc: 'Immediate financial aid for urgent cardiac surgeries, mobile screening clinic operations, or community food supplies.',
+      desc: 'Immediate financial aid for urgent emergency relief funds, mobile screening center operations, or community food supplies.',
       icon: 'favorite',
       actionText: 'Donate One-Time',
       action: () => navTo('donate')
     },
     {
       title: 'Monthly Pulse Membership',
-      desc: 'Sustained recurring giving that ensures our medical outreach buses remain fueled and operational every month.',
+      desc: 'Sustained recurring giving that ensures our community outreach buses remain fueled and operational every month.',
       icon: 'update',
       actionText: 'Become a Monthly Donor',
       action: () => navTo('donate')
     },
     {
       title: 'Corporate Health Sponsorship',
-      desc: 'Partner your enterprise with Brown\'s Heart Care Foundation to fulfill CSR goals, sponsor medical equipment, or fund surgeries.',
+      desc: 'Partner your enterprise with Brown\'s Heart Care Foundation to fulfill CSR goals, sponsor support equipment, or fund relief funds.',
       icon: 'corporate_fare',
       actionText: 'Corporate Partnership Info',
       action: () => navTo('contact')
     },
     {
-      title: 'In-Kind Medical & Food Supplies',
-      desc: 'Donate diagnostic equipment, ECG machines, cardiac medications, vitamins, or non-perishable healthy food parcels.',
+      title: 'In-Kind support & Food Supplies',
+      desc: 'Donate assessment tools, assessment machines, essential supplies, vitamins, or non-perishable healthy food parcels.',
       icon: 'inventory_2',
       actionText: 'Supply Donation Inquiries',
       action: () => navTo('contact')
@@ -43,8 +43,8 @@ export default function WaysToGive({ setCurrentPage, openDonateModal, openVolunt
       action: () => navTo('contact')
     },
     {
-      title: 'Volunteer Time & Medical Expertise',
-      desc: 'Are you a cardiologist, nurse, or passionate community member? Lend your skills to our mobile health clinics.',
+      title: 'Volunteer Time & support Expertise',
+      desc: 'Are you a specialist, nurse, or passionate community member? Lend your skills to our mobile health centers.',
       icon: 'handshake',
       actionText: 'Apply to Volunteer',
       action: openVolunteerModal
@@ -62,7 +62,7 @@ export default function WaysToGive({ setCurrentPage, openDonateModal, openVolunt
           Ways to Give & Partner
         </h1>
         <p className="text-secondary text-base max-w-2xl mx-auto leading-relaxed">
-          Every contribution — whether financial, in-kind medical supplies, corporate sponsorship, or volunteer time — creates real health impact.
+          Every contribution — whether financial, in-kind relief supplies, corporate sponsorship, or volunteer time — creates real health impact.
         </p>
       </section>
 

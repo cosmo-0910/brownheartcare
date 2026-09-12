@@ -127,7 +127,7 @@ export default function Navbar({ currentPage, setCurrentPage, openVolunteerModal
                   onClick={() => navTo('programs')}
                   className="w-full text-left px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-[#ffd9de]/30 hover:text-[#b0004a] flex items-center gap-2"
                 >
-                  <span className="material-symbols-outlined text-base">medical_services</span>
+                  <span className="material-symbols-outlined text-base">volunteer_activism</span>
                   <span>Programs & Services</span>
                 </button>
 

@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 
 export default function VolunteerModal({ isOpen, onClose, onAddVolunteer, targetEvent }) {
   const [step, setStep] = useState(1);
-  const [selectedInterests, setSelectedInterests] = useState(['medical', 'events']);
+  const [selectedInterests, setSelectedInterests] = useState(['support', 'events']);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [validationError, setValidationError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -157,18 +157,18 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer, target
       zip_code: formData.zip,
       detailed_address: `${formData.street}, ${formData.city}, ${formData.state} ${formData.zip}`.trim(),
       occupation: formData.occupation,
-      medical_qualifications: formData.qualifications, // legacy field key maintained for db compatibility
+      support_qualifications: formData.qualifications, // legacy field key maintained for db compatibility
       qualifications: formData.qualifications,
       emergency_contact: formData.emergencyContact,
       motivation: formData.motivation,
       photo_url: formData.photoUrl,
       event_title: targetEventTitle,
       interests: selectedInterests.map(i => {
-        if (i === 'medical') return 'Medical Screening & Outreach';
+        if (i === 'support') return 'support Screening & Outreach';
         if (i === 'events') return 'Community Food & Aid';
         if (i === 'admin') return 'Logistics & Admin Support';
         if (i === 'fundraising') return 'Resource Mobilization';
-        return 'Patient Support Care';
+        return 'beneficiary Support Care';
       }),
       created_at: new Date().toISOString(),
       invitation_status: 'Pending'
@@ -230,10 +230,10 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer, target
 
   const interestCards = [
     {
-      id: 'medical',
-      title: 'Medical Screening Outreach',
-      desc: 'Assist nurses and doctors during community health checks & vital screenings.',
-      icon: 'medical_services'
+      id: 'support',
+      title: 'support Screening Outreach',
+      desc: 'Assist support staff and doctors during community health checks & vital screenings.',
+      icon: 'volunteer_activism'
     },
     {
       id: 'events',
@@ -254,8 +254,8 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer, target
       icon: 'groups'
     },
     {
-      id: 'patient',
-      title: 'Patient Care & Companionship',
+      id: 'beneficiary',
+      title: 'beneficiary Care & Companionship',
       desc: 'Offer personal care, comfort, and follow-up guidance to vulnerable beneficiaries.',
       icon: 'favorite'
     }

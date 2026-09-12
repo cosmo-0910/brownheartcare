@@ -6,11 +6,11 @@ export default function FAQ({ setCurrentPage, openDonateModal }) {
   const faqs = [
     {
       q: 'How does Brown\'s Heart Care Foundation ensure financial transparency?',
-      a: 'We publish audited annual financial reports detailing every dollar received and spent. 88% of all funds raised directly support patient cardiac surgeries, mobile clinic operations, and food relief baskets, while 12% is allocated to administration and fundraising.'
+      a: 'We publish audited annual financial reports detailing every dollar received and spent. 88% of all funds raised directly support beneficiary emergency relief funds, mobile center operations, and food relief baskets, while 12% is allocated to administration and fundraising.'
     },
     {
-      q: 'How can a patient apply for cardiac surgery subsidies or free medication?',
-      a: 'Patients or their family members can apply through our Contact page under "Patient Assistance" or visit our mobile health clinic. Applications require a medical diagnosis report from a certified doctor and financial verification.'
+      q: 'How can a beneficiary apply for emergency relief fund subsidies or free relief supply?',
+      a: 'beneficiaries or their family members can apply through our Contact page under "beneficiary Assistance" or visit our mobile health center. Applications require a support diagnosis report from a certified doctor and financial verification.'
     },
     {
       q: 'Is my donation tax-deductible?',
@@ -18,11 +18,11 @@ export default function FAQ({ setCurrentPage, openDonateModal }) {
     },
     {
       q: 'What is the "Monthly Pulse Partner" program?',
-      a: 'Monthly Pulse Partners provide reliable recurring gifts that keep our mobile heart diagnostic buses fueled and staffed continuously throughout the year. You can choose any monthly amount and cancel or modify it at any time.'
+      a: 'Monthly Pulse Partners provide reliable recurring gifts that keep our mobile heart assessment buses fueled and staffed continuously throughout the year. You can choose any monthly amount and cancel or modify it at any time.'
     },
     {
-      q: 'Can medical professionals volunteer for mobile clinic outreaches?',
-      a: 'Absolutely! We actively welcome licensed cardiologists, general practitioners, registered nurses, echocardiogram technicians, and medical students. Please fill out our Volunteer application to join our upcoming outreach roster.'
+      q: 'Can skilled volunteers volunteer for mobile center outreaches?',
+      a: 'Absolutely! We actively welcome licensed specialists, general practitioners, registered support staff, assessment technicians, and support students. Please fill out our Volunteer application to join our upcoming outreach roster.'
     }
   ];
 
@@ -36,7 +36,7 @@ export default function FAQ({ setCurrentPage, openDonateModal }) {
           Frequently Asked Questions
         </h1>
         <p className="text-secondary text-base leading-relaxed">
-          Find clear answers regarding our medical programs, patient eligibility, donor security, and volunteer opportunities.
+          Find clear answers regarding our support programs, beneficiary eligibility, donor security, and volunteer opportunities.
         </p>
       </section>
 

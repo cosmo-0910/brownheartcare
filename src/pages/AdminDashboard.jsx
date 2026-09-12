@@ -100,8 +100,8 @@ export default function AdminDashboard({
   // New Media Highlight Form State with Auto Duration
   const [newHighlight, setNewHighlight] = useState({
     title: '',
-    category: 'medical',
-    categoryLabel: 'Medical Outreach',
+    category: 'support',
+    categoryLabel: 'community outreach',
     duration: '04:30',
     date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
     views: '1.2K views',
@@ -392,8 +392,8 @@ export default function AdminDashboard({
     onUpdateHighlights([item, ...highlights]);
     setNewHighlight({
       title: '',
-      category: 'medical',
-      categoryLabel: 'Medical Outreach',
+      category: 'support',
+      categoryLabel: 'community outreach',
       duration: '04:30',
       date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
       views: '1.2K views',
@@ -726,7 +726,7 @@ export default function AdminDashboard({
                           </div>
                           <div className="flex items-start gap-1.5 text-gray-600 pt-1 border-t border-gray-100">
                             <span className="material-symbols-outlined text-sm text-[#b0004a] shrink-0 mt-0.5">psychology</span>
-                            <span className="line-clamp-2 italic">"{vol.qualifications || vol.medical_qualifications || 'General volunteer skills'}"</span>
+                            <span className="line-clamp-2 italic">"{vol.qualifications || vol.support_qualifications || 'General volunteer skills'}"</span>
                           </div>
                         </div>
                       </div>
@@ -1002,7 +1002,7 @@ export default function AdminDashboard({
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Free Health Screening for 1,500 Rural Families"
+                      placeholder="e.g. Free needs assessment for 1,500 Rural Families"
                       value={newStory.title}
                       onChange={(e) => setNewStory({ ...newStory, title: e.target.value })}
                       className="w-full bg-white p-2.5 rounded-xl border border-gray-200"
@@ -1218,7 +1218,7 @@ export default function AdminDashboard({
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Free Health Screening & Medical Drive"
+                    placeholder="e.g. Free needs assessment & support Drive"
                     value={newEvent.title}
                     onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                     className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
@@ -1243,7 +1243,7 @@ export default function AdminDashboard({
                     <label className="block font-semibold text-gray-700 mb-1">Category Badge</label>
                     <input
                       type="text"
-                      placeholder="e.g. Medical Screening, Food Drive..."
+                      placeholder="e.g. support Screening, Food Drive..."
                       value={newEvent.typeLabel}
                       onChange={(e) => setNewEvent({ ...newEvent, typeLabel: e.target.value })}
                       className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
@@ -1338,7 +1338,7 @@ export default function AdminDashboard({
                   <label className="block font-semibold text-gray-700 mb-1">Full Program Details & Background (Shown on "Learn More")</label>
                   <textarea
                     rows={4}
-                    placeholder="Write detailed program objectives, schedule, requirements, medical services offered, etc..."
+                    placeholder="Write detailed program objectives, schedule, requirements, support services offered, etc..."
                     value={newEvent.fullDetails}
                     onChange={(e) => setNewEvent({ ...newEvent, fullDetails: e.target.value })}
                     className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a] resize-none font-sans"
@@ -1550,7 +1550,7 @@ export default function AdminDashboard({
                       <label className="block font-semibold text-gray-700 mb-1">Full Program Details & Background (Shown on "Learn More")</label>
                       <textarea
                         rows={5}
-                        placeholder="Write comprehensive program details, schedule, medical services offered, etc..."
+                        placeholder="Write comprehensive program details, schedule, support services offered, etc..."
                         value={editingEvent.fullDetails || editingEvent.desc || ''}
                         onChange={(e) => setEditingEvent({ ...editingEvent, fullDetails: e.target.value })}
                         className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent font-sans text-gray-900 focus:bg-white focus:border-[#b0004a] resize-none"
@@ -1624,7 +1624,7 @@ export default function AdminDashboard({
                       onChange={(e) => setNewHighlight({ ...newHighlight, category: e.target.value, categoryLabel: e.target.options[e.target.selectedIndex].text })}
                       className="w-full bg-[#eee] p-2.5 rounded-xl border border-transparent focus:bg-white focus:border-[#b0004a]"
                     >
-                      <option value="medical">Medical Outreach</option>
+                      <option value="support">community outreach</option>
                       <option value="food">Nutritional Relief</option>
                       <option value="community">Community Aid</option>
                     </select>
@@ -1691,7 +1691,7 @@ export default function AdminDashboard({
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="bg-[#ffd9de] text-[#b0004a] px-2.5 py-0.5 rounded-full font-bold text-[10px]">
-                          {h.categoryLabel || 'Medical Outreach'}
+                          {h.categoryLabel || 'community outreach'}
                         </span>
                         <div className="flex items-center gap-2">
                           {h.featured && (
@@ -1925,7 +1925,7 @@ export default function AdminDashboard({
               </div>
               <div className="bg-gray-50 p-3.5 rounded-xl space-y-1">
                 <span className="text-gray-400 font-bold block text-[10px]">PROFESSION & KEY SKILLS</span>
-                <p className="font-semibold text-gray-800">{selectedVolunteer.qualifications || selectedVolunteer.medical_qualifications || 'General volunteer skills'}</p>
+                <p className="font-semibold text-gray-800">{selectedVolunteer.qualifications || selectedVolunteer.support_qualifications || 'General volunteer skills'}</p>
               </div>
               <div className="bg-gray-50 p-3.5 rounded-xl space-y-1 sm:col-span-2">
                 <span className="text-gray-400 font-bold block text-[10px]">EMERGENCY CONTACT PERSON</span>

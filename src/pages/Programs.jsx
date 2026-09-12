@@ -9,36 +9,36 @@ export default function Programs({ setCurrentPage, openDonateModal, openVoluntee
   const programs = [
     {
       id: 'screening',
-      title: 'Mobile Cardiac Diagnostic Clinics',
-      subtitle: 'Free Blood Pressure, ECG & Risk Factor Screening',
-      desc: 'Our fleet of custom mobile health units travels directly into underserved urban neighborhoods and rural villages. Equipped with digital ECG machines, blood glucose monitors, and echocardiogram units operated by licensed cardiologists.',
+      title: 'Mobile community assessment centers',
+      subtitle: 'Free wellness, assessment & Risk Factor Screening',
+      desc: 'Our fleet of custom mobile health units travels directly into underserved urban neighborhoods and rural villages. Equipped with digital assessment machines, basic health monitors, and assessment units operated by licensed specialists.',
       stats: '15,000+ Screenings Annually',
       icon: 'favorite',
       badge: 'Preventative Care'
     },
     {
-      id: 'surgeries',
-      title: 'Subsidized Pediatric & Adult Cardiac Surgeries',
-      subtitle: 'Emergency Financial & Surgical Relief Fund',
-      desc: 'Partnering with top regional teaching hospitals to cover up to 100% of surgical costs for low-income patients requiring open-heart valve repair, congenital defect correction, or pacemaker implantation.',
-      stats: '180+ Life-Saving Surgeries Funded',
-      icon: 'medical_services',
+      id: 'relief funds',
+      title: 'Subsidized youth & Adult emergency relief funds',
+      subtitle: 'Emergency Financial & relief Relief Fund',
+      desc: 'Partnering with top regional teaching partner institutions to cover up to 100% of relief costs for low-income beneficiaries requiring critical critical aid, critical intervention, or critical intervention.',
+      stats: '180+ Life-Saving relief funds Funded',
+      icon: 'volunteer_activism',
       badge: 'Emergency Fund'
     },
     {
-      id: 'medication',
-      title: 'Chronic Cardiac Medication Supply Line',
+      id: 'relief supply',
+      title: 'Chronic welfare relief supply Supply Line',
       subtitle: 'Free Monthly Prescription Assistance',
-      desc: 'Cardiovascular medications (antihypertensives, blood thinners, statins) must be taken consistently. We partner with pharmaceutical donors to supply monthly prescriptions to low-income cardiac patients at zero cost.',
+      desc: 'essential relief supplies (essentials, relief supplies, provisions) must be taken consistently. We partner with supply donors to supply monthly care packages to low-income vulnerable individuals at zero cost.',
       stats: '4,200+ Active Monthly Beneficiaries',
       icon: 'pill',
-      badge: 'Medication Access'
+      badge: 'relief supply Access'
     },
     {
       id: 'nutrition',
       title: 'Heart-Healthy Food & Grain Relief (SDG 2)',
-      subtitle: 'Nutritional Stability for Cardiac Recovery',
-      desc: 'Proper nutrition is critical to recovering from cardiovascular events and managing hypertension. We distribute wholesome, sodium-balanced grain boxes, fresh produce vouchers, and dietary counseling.',
+      subtitle: 'Nutritional Stability for community recovery',
+      desc: 'Proper nutrition is critical to recovering from community events and managing hypertension. We distribute wholesome, sodium-balanced grain boxes, fresh produce vouchers, and dietary counseling.',
       stats: '35,000+ Meal Baskets Distributed',
       icon: 'restaurant',
       badge: 'SDG 2 Alignment'
@@ -56,7 +56,7 @@ export default function Programs({ setCurrentPage, openDonateModal, openVoluntee
           Our Health & Nutrition Programs
         </h1>
         <p className="text-secondary text-base max-w-2xl mx-auto leading-relaxed">
-          Comprehensive cardiovascular medical programs combined with food security interventions designed to lower mortality and restore community well-being.
+          Comprehensive community support programs combined with food security interventions designed to lower mortality and restore community well-being.
         </p>
       </section>
 

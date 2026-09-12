@@ -23,7 +23,7 @@ export default function OurStory({ setCurrentPage, openDonateModal, openVoluntee
               Brown’s Heart Care Foundation is built on one simple truth: compassion heals. What started as quiet acts of kindness — sharing home-cooked meals, visiting sick neighbors, providing emergency heart medicine — has grown into a widespread healthcare movement.
             </p>
             <p className="text-sm text-secondary leading-relaxed">
-              We bridge the gap between high-level hospital cardiovascular care and underserved communities that lack basic health access or nutritional stability.
+              We bridge the gap between high-level partner institution community care and underserved communities that lack basic health access or nutritional stability.
             </p>
             <div className="pt-2 flex flex-wrap gap-4">
               <button
@@ -57,7 +57,7 @@ export default function OurStory({ setCurrentPage, openDonateModal, openVoluntee
         <div className="max-w-container-max mx-auto px-4 md:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
             <h2 className="font-heading font-extrabold text-3xl text-on-surface">Our Global Sustainable Commitments</h2>
-            <p className="text-secondary text-sm">Aligning local heart healthcare with United Nations Sustainable Development Goals.</p>
+            <p className="text-secondary text-sm">Aligning local well-beingcare with United Nations Sustainable Development Goals.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -71,7 +71,7 @@ export default function OurStory({ setCurrentPage, openDonateModal, openVoluntee
                 </h3>
               </div>
               <p className="text-xs text-on-surface-variant mb-6 leading-relaxed">
-                We believe nutritional stability is the foundation of heart health. Through community feeding programs and grain box distributions, we work to ensure no patient goes to bed hungry while recovering.
+                We believe nutritional stability is the foundation of well-being. Through community feeding programs and grain box distributions, we work to ensure no beneficiary goes to bed hungry while recovering.
               </p>
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-semibold">
@@ -90,11 +90,11 @@ export default function OurStory({ setCurrentPage, openDonateModal, openVoluntee
                 <span className="px-3 py-1 bg-[#4c9f38]/10 text-[#4c9f38] font-bold text-xs rounded-full">SDG 3</span>
                 <h3 className="font-heading font-bold text-xl text-on-surface flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary">health_and_safety</span>
-                  <span>Good Health & Cardiovascular Well-Being</span>
+                  <span>Good Health & community well-being</span>
                 </h3>
               </div>
               <p className="text-xs text-on-surface-variant mb-6 leading-relaxed">
-                Access to essential cardiovascular care should never be a privilege based on wealth. We provide free screening, maternal heart health monitoring, and subsidize pediatric cardiac surgeries.
+                Access to essential community care should never be a privilege based on wealth. We provide free screening, maternal well-being monitoring, and subsidize youth emergency relief funds.
               </p>
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-semibold">
@@ -113,7 +113,7 @@ export default function OurStory({ setCurrentPage, openDonateModal, openVoluntee
       {/* Movement Banner */}
       <section className="max-w-container-max mx-auto px-4 md:px-8">
         <div className="bg-surface-container-lowest/80 backdrop-blur-xl border border-outline-variant/40 p-8 md:p-14 rounded-3xl shadow-card text-center space-y-6">
-          <span className="material-symbols-outlined text-5xl text-primary fill">vital_signs</span>
+          <span className="material-symbols-outlined text-5xl text-primary fill">trending_up</span>
           <h2 className="font-heading font-extrabold text-3xl sm:text-4xl text-on-surface max-w-2xl mx-auto">
             A Movement of Compassion in Action
           </h2>

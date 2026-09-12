@@ -3,9 +3,9 @@ import React from 'react';
 export default function Volunteer({ openVolunteerModal }) {
   const roles = [
     {
-      title: 'Medical Professionals (Cardiologists, Physicians & Nurses)',
-      desc: 'Perform free cardiovascular assessments, ECG reviews, and patient consultations during weekend outreach clinics.',
-      icon: 'medical_services'
+      title: 'skilled volunteers (specialists, counselors & support staff)',
+      desc: 'Perform free needs assessments, assessment reviews, and beneficiary consultations during weekend outreach centers.',
+      icon: 'volunteer_activism'
     },
     {
       title: 'Nutritional Specialists & Dietitians',
@@ -14,12 +14,12 @@ export default function Volunteer({ openVolunteerModal }) {
     },
     {
       title: 'Event & Logistics Operations',
-      desc: 'Assist with registration, crowd management, food hamper packing, and clinic setup during health walks and drives.',
+      desc: 'Assist with registration, crowd management, food hamper packing, and center setup during health walks and drives.',
       icon: 'diversity_3'
     },
     {
       title: 'Tech, Admin & Youth Ambassadors',
-      desc: 'Help manage medical record intake, photography, social media coverage, and administrative coordination.',
+      desc: 'Help manage support record intake, photography, social media coverage, and administrative coordination.',
       icon: 'laptop_mac'
     }
   ];

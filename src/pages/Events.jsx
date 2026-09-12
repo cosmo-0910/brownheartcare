@@ -30,7 +30,7 @@ export default function Events({ setCurrentPage, openVolunteerModal, openDonateM
           Our Outreach & Events
         </h1>
         <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-          Join us in our mission to bring heart health and nutritional stability to the community. Participate in our upcoming events, volunteer your time, or click on past outreaches to watch detailed video reports.
+          Join us in our mission to bring well-being and nutritional stability to the community. Participate in our upcoming events, volunteer your time, or click on past outreaches to watch detailed video reports.
         </p>
       </section>
 
@@ -117,7 +117,7 @@ export default function Events({ setCurrentPage, openVolunteerModal, openDonateM
         <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
           <h2 className="font-heading font-bold text-3xl text-[#1a1c1c]">Our Impact in Action</h2>
           <p className="text-gray-500 text-sm">
-            Watch our video documentaries and reports from recent health screening and community outreach initiatives.
+            Watch our video documentaries and reports from recent needs assessment and community outreach initiatives.
           </p>
         </div>
 
@@ -128,18 +128,18 @@ export default function Events({ setCurrentPage, openVolunteerModal, openDonateM
                 key={item.id}
                 onClick={() => handleOpenDetailModal({
                   title: item.title,
-                  badge: item.categoryLabel || 'Medical Outreach',
+                  badge: item.categoryLabel || 'community outreach',
                   date: item.date || 'Recent Outreach',
                   location: 'Lagos & Rural Outreach Centers',
-                  summary: item.desc || 'Community medical and nutritional outreach initiative.',
+                  summary: item.desc || 'Community support and nutritional outreach initiative.',
                   stats: {
-                    patientsScreened: 'Multiple Families',
-                    surgeriesAssessed: 'Assessed Live',
-                    medicationsDistributed: 'Aid Distributed',
+                    beneficiariesScreened: 'Multiple Families',
+                    relief fundsAssessed: 'Assessed Live',
+                    relief suppliesDistributed: 'Aid Distributed',
                     volunteersParticipated: 'Active Volunteers'
                   },
-                  patientQuote: '"The care and dedication of the Brown\'s Heart Care team changed our lives."',
-                  patientAuthor: '— Community Beneficiary',
+                  beneficiaryQuote: '"The care and dedication of the Brown\'s Heart Care team changed our lives."',
+                  beneficiaryAuthor: '— Community Beneficiary',
                   videoUrl: item.videoUrl || '/hero/PHOTO-2026-09-01-13-37-18.jpg',
                   galleryPhotos: item.galleryPhotos && item.galleryPhotos.length > 0 ? item.galleryPhotos : ['/hero/PHOTO-2026-09-01-13-37-18.jpg']
                 })}
@@ -293,19 +293,19 @@ export default function Events({ setCurrentPage, openVolunteerModal, openDonateM
                     <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Key Statistics Achieved</h4>
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div className="bg-[#f9f9f9] p-3 rounded-xl">
-                        <span className="text-gray-500 block text-[10px]">Patients Screened</span>
-                        <span className="font-heading font-bold text-base text-[#b0004a]">{selectedOutreachDetail.stats.patientsScreened}</span>
+                        <span className="text-gray-500 block text-[10px]">beneficiaries Screened</span>
+                        <span className="font-heading font-bold text-base text-[#b0004a]">{selectedOutreachDetail.stats.beneficiariesScreened}</span>
                       </div>
                       <div className="bg-[#f9f9f9] p-3 rounded-xl">
                         <span className="text-gray-500 block text-[10px]">Relief Provided</span>
-                        <span className="font-heading font-bold text-base text-[#b0004a]">{selectedOutreachDetail.stats.medicationsDistributed}</span>
+                        <span className="font-heading font-bold text-base text-[#b0004a]">{selectedOutreachDetail.stats.relief suppliesDistributed}</span>
                       </div>
                       <div className="bg-[#f9f9f9] p-3 rounded-xl">
-                        <span className="text-gray-500 block text-[10px]">Surgeries Assessed</span>
-                        <span className="font-heading font-bold text-base text-[#1a1c1c]">{selectedOutreachDetail.stats.surgeriesAssessed}</span>
+                        <span className="text-gray-500 block text-[10px]">relief funds Assessed</span>
+                        <span className="font-heading font-bold text-base text-[#1a1c1c]">{selectedOutreachDetail.stats.relief fundsAssessed}</span>
                       </div>
                       <div className="bg-[#f9f9f9] p-3 rounded-xl">
-                        <span className="text-gray-500 block text-[10px]">Medical Team</span>
+                        <span className="text-gray-500 block text-[10px]">support team</span>
                         <span className="font-heading font-bold text-base text-[#1a1c1c]">{selectedOutreachDetail.stats.volunteersParticipated}</span>
                       </div>
                     </div>
@@ -315,10 +315,10 @@ export default function Events({ setCurrentPage, openVolunteerModal, openDonateM
                   <div className="bg-[#ffd9de]/30 p-4 rounded-xl space-y-2 border border-[#ffd9de]">
                     <span className="material-symbols-outlined text-[#b0004a] text-lg">format_quote</span>
                     <p className="text-xs text-gray-700 italic leading-relaxed">
-                      {selectedOutreachDetail.patientQuote}
+                      {selectedOutreachDetail.beneficiaryQuote}
                     </p>
                     <p className="text-[11px] font-bold text-[#b0004a] text-right">
-                      {selectedOutreachDetail.patientAuthor}
+                      {selectedOutreachDetail.beneficiaryAuthor}
                     </p>
                   </div>
 
@@ -398,9 +398,9 @@ export default function Events({ setCurrentPage, openVolunteerModal, openDonateM
                   <div className="bg-[#ffd9de]/30 p-4 rounded-2xl border border-[#ffd9de] space-y-2">
                     <h4 className="font-heading font-bold text-xs text-[#b0004a] uppercase tracking-wider">Foundation Outreach Objectives</h4>
                     <ul className="text-xs text-gray-700 space-y-1.5 list-disc list-inside">
-                      <li>Free vital health screenings & diagnostic evaluations.</li>
+                      <li>Free vital needs assessments & assessment evaluations.</li>
                       <li>Distribution of essential food relief kits & nutritional supplies.</li>
-                      <li>Community health education & ongoing medical support.</li>
+                      <li>Community health education & ongoing support support.</li>
                     </ul>
                   </div>
 

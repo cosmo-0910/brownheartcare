@@ -47,7 +47,7 @@ export default function Footer({ setCurrentPage, openDonateModal, openVolunteerM
             </div>
 
             <p className="text-sm text-on-surface-variant max-w-md leading-relaxed">
-              We are a compassionate outreach foundation dedicated to health screenings, food security, emergency aid, and empowering underserved communities with love and dignity.
+              We are a compassionate outreach foundation dedicated to needs assessments, food security, emergency aid, and empowering underserved communities with love and dignity.
             </p>
 
             <div className="bg-primary/5 p-3.5 rounded-2xl border border-primary/20 space-y-1 text-xs text-on-surface">
