@@ -14,6 +14,7 @@ export default function Donate({ setCurrentPage, onAddDonation, targetSponsorEve
     paymentMethod: 'card'
   });
   const [donated, setDonated] = useState(false);
+  const [formError, setFormError] = useState('');
 
   // Contact form state on Donate page
   const [contactSubmitted, setContactSubmitted] = useState(false);
@@ -48,10 +49,11 @@ export default function Donate({ setCurrentPage, onAddDonation, targetSponsorEve
 
   const handleDonateSubmit = (e) => {
     e.preventDefault();
+    setFormError('');
     if (!currentAmount || currentAmount <= 0) return;
 
     if (!donorInfo.email) {
-      alert('Please enter your email to proceed with payment.');
+      setFormError('Please enter a valid email address to proceed with payment.');
       return;
     }
 
@@ -205,6 +207,12 @@ export default function Donate({ setCurrentPage, onAddDonation, targetSponsorEve
 
             {!donated ? (
               <form onSubmit={handleDonateSubmit} className="space-y-6">
+                {formError && (
+                  <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2 animate-fadeIn">
+                    <span className="material-symbols-outlined text-lg text-red-600">error</span>
+                    <span>{formError}</span>
+                  </div>
+                )}
                 {/* One-time vs Monthly Toggle */}
                 <div className="flex bg-[#eee] rounded-full p-1 text-xs font-semibold">
                   <button

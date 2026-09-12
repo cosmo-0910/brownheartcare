@@ -44,6 +44,21 @@ export default function AdminDashboard({
 
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Custom Toast & Confirm Modal States
+  const [toast, setToast] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState(null);
+
+  const showToast = (message, title = 'Notification', type = 'success') => {
+    setToast({ message, title, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 4500);
+  };
+
+  const showConfirm = ({ title, message, onConfirm }) => {
+    setConfirmDialog({ title, message, onConfirm });
+  };
+
   // Selected Item Modal States
   const [selectedVolunteer, setSelectedVolunteer] = useState(null);
   const [selectedDonor, setSelectedDonor] = useState(null);
@@ -65,14 +80,34 @@ export default function AdminDashboard({
   useEffect(() => {
     if (activeTab === 'subscribers') {
       setSubscribersLoading(true);
-      supabase
-        .from('subscribers')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .then(({ data, error }) => {
-          if (!error && data) setSubscribers(data);
+      try {
+        if (supabase && typeof supabase.from === 'function') {
+          supabase
+            .from('subscribers')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .then(({ data, error }) => {
+              if (!error && Array.isArray(data)) {
+                setSubscribers(data);
+              } else {
+                setSubscribers([]);
+              }
+              setSubscribersLoading(false);
+            })
+            .catch((err) => {
+              console.error('Error fetching subscribers:', err);
+              setSubscribers([]);
+              setSubscribersLoading(false);
+            });
+        } else {
+          setSubscribers([]);
           setSubscribersLoading(false);
-        });
+        }
+      } catch (err) {
+        console.error('Exception fetching subscribers:', err);
+        setSubscribers([]);
+        setSubscribersLoading(false);
+      }
     }
   }, [activeTab]);
 
@@ -150,25 +185,25 @@ export default function AdminDashboard({
   const handleSaveBranding = (e) => {
     e.preventDefault();
     updateSettings(brandingForm);
-    alert('Branding and tagline saved to live site!');
+    showToast('Branding and tagline saved to live site!', 'Branding Saved');
   };
 
   const handleSaveStats = (e) => {
     e.preventDefault();
     updateStats(statsForm);
-    alert('Impact statistics updated live on front-end!');
+    showToast('Impact statistics updated live on front-end!', 'Stats Saved');
   };
 
   const handleSaveSocials = (e) => {
     e.preventDefault();
     updateSocialLinks(socialsForm);
-    alert('Social media links updated live across header, footer, and contact page!');
+    showToast('Social media links updated live across header, footer, and contact page!', 'Social Links Saved');
   };
 
   const handleSaveContact = (e) => {
     e.preventDefault();
     updateContactInfo(contactForm);
-    alert('Contact information updated live!');
+    showToast('Contact information updated live!', 'Contact Saved');
   };
 
   // Editing Story State
@@ -188,7 +223,7 @@ export default function AdminDashboard({
       image: editingStory.image
     });
     setEditingStory(null);
-    alert('Our Story timeline record updated live!');
+    showToast('Our Story timeline record updated live!', 'Story Updated');
   };
 
   const handleAddStory = (e) => {
@@ -200,7 +235,7 @@ export default function AdminDashboard({
       image: newStory.image || '/hero/PHOTO-2026-09-01-13-37-18.jpg'
     });
     setNewStory({ year: new Date().getFullYear().toString(), title: '', description: '', image: '' });
-    alert('New Story Record added to Our Story timeline!');
+    showToast('New Story Record added to Our Story timeline!', 'Story Added');
   };
 
   const handleStoryImageUpload = (e) => {
@@ -288,30 +323,41 @@ export default function AdminDashboard({
 
   // Delete Actions
   const handleDeleteVolunteer = (volId) => {
-    if (window.confirm('Are you sure you want to delete this volunteer record from the roster?')) {
-      const savedVols = JSON.parse(localStorage.getItem('bhc_volunteers_roster') || '[]');
-      const updatedVols = savedVols.filter(v => v.id !== volId);
-      localStorage.setItem('bhc_volunteers_roster', JSON.stringify(updatedVols));
-      setSelectedVolunteer(null);
-      alert('Volunteer application record deleted.');
-      window.location.reload();
-    }
+    showConfirm({
+      title: 'Delete Volunteer Record',
+      message: 'Are you sure you want to delete this volunteer record from the roster?',
+      onConfirm: () => {
+        const savedVols = JSON.parse(localStorage.getItem('bhc_volunteers_roster') || '[]');
+        const updatedVols = savedVols.filter(v => v.id !== volId);
+        localStorage.setItem('bhc_volunteers_roster', JSON.stringify(updatedVols));
+        setSelectedVolunteer(null);
+        showToast('Volunteer application record deleted.', 'Record Deleted', 'warning');
+      }
+    });
   };
 
   const handleDeleteEvent = (eventId) => {
-    if (window.confirm('Are you sure you want to delete this outreach event?')) {
-      const updated = events.filter(e => e.id !== eventId);
-      onUpdateEvents(updated);
-      alert('Outreach event deleted.');
-    }
+    showConfirm({
+      title: 'Delete Outreach Event',
+      message: 'Are you sure you want to delete this outreach event? It will be removed live from the website.',
+      onConfirm: () => {
+        const updated = events.filter(e => e.id !== eventId);
+        onUpdateEvents(updated);
+        showToast('Outreach event deleted.', 'Event Deleted', 'warning');
+      }
+    });
   };
 
   const handleDeleteHighlight = (highlightId) => {
-    if (window.confirm('Are you sure you want to delete this media highlight?')) {
-      const updated = highlights.filter(h => h.id !== highlightId);
-      onUpdateHighlights(updated);
-      alert('Media highlight deleted.');
-    }
+    showConfirm({
+      title: 'Delete Media Highlight',
+      message: 'Are you sure you want to delete this media highlight documentary?',
+      onConfirm: () => {
+        const updated = highlights.filter(h => h.id !== highlightId);
+        onUpdateHighlights(updated);
+        showToast('Media highlight deleted.', 'Highlight Deleted', 'warning');
+      }
+    });
   };
 
   const handleToggleEventFeatured = (id) => {
@@ -376,7 +422,7 @@ export default function AdminDashboard({
       onUpdateEvents(updated);
     }
     setEditingEvent(null);
-    alert('Outreach event updated live on website!');
+    showToast('Outreach event updated live on website!', 'Event Saved');
   };
 
   const handleAddEvent = (e) => {
@@ -403,7 +449,7 @@ export default function AdminDashboard({
       videoUrl: '',
       featured: true
     });
-    alert(`New outreach event published under ${item.status} status!`);
+    showToast(`New outreach event published under ${item.status} status!`, 'Event Published');
   };
 
   const handleAddHighlight = (e) => {
@@ -427,7 +473,7 @@ export default function AdminDashboard({
       galleryPhotos: [],
       featured: true
     });
-    alert('New media highlight published with automatic video duration!');
+    showToast('New media highlight published with automatic video duration!', 'Media Published');
   };
 
   const handleSendInvitation = (e) => {
@@ -436,7 +482,7 @@ export default function AdminDashboard({
     setTimeout(() => {
       setInvitationSent(false);
       setInvitationMessage('');
-      alert(`Outreach invitation sent to ${selectedVolunteer.email || selectedVolunteer.full_name}!`);
+      showToast(`Outreach invitation sent to ${selectedVolunteer.email || selectedVolunteer.full_name}!`, 'Invitation Sent');
     }, 1200);
   };
 
@@ -1845,7 +1891,7 @@ export default function AdminDashboard({
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-5">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-4">
               <div>
-                <h3 className="font-heading font-bold text-xl text-gray-900">Newsletter Subscribers ({subscribers.length})</h3>
+                <h3 className="font-heading font-bold text-xl text-gray-900">Newsletter Subscribers ({(subscribers || []).length})</h3>
                 <p className="text-xs text-gray-500 mt-1">All email addresses subscribed from the website footer newsletter form.</p>
               </div>
               {subscribersLoading && (
@@ -1853,7 +1899,7 @@ export default function AdminDashboard({
               )}
             </div>
 
-            {subscribers.length > 0 ? (
+            {(subscribers && subscribers.length > 0) ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
@@ -1865,8 +1911,8 @@ export default function AdminDashboard({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {subscribers.map((sub, i) => (
-                      <tr key={sub.id} className="hover:bg-[#ffd9de]/10 transition-colors">
+                    {(subscribers || []).map((sub, i) => (
+                      <tr key={sub.id || sub.email || i} className="hover:bg-[#ffd9de]/10 transition-colors">
                         <td className="p-3.5 text-gray-400 font-bold">{i + 1}</td>
                         <td className="p-3.5 font-semibold text-gray-900">{sub.email}</td>
                         <td className="p-3.5">
@@ -1879,7 +1925,7 @@ export default function AdminDashboard({
                           </span>
                         </td>
                         <td className="p-3.5 text-gray-500">
-                          {sub.created_at ? new Date(sub.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                          {safeFormatDate(sub.created_at)}
                         </td>
                       </tr>
                     ))}
@@ -1903,7 +1949,7 @@ export default function AdminDashboard({
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-5">
             <div className="border-b border-gray-100 pb-4">
               <h3 className="font-heading font-bold text-xl text-gray-900">Send Mass Email to All Subscribers</h3>
-              <p className="text-xs text-gray-500 mt-1">Compose a newsletter or announcement and send it to all {subscribers.length} subscriber(s) at once via Resend.</p>
+              <p className="text-xs text-gray-500 mt-1">Compose a newsletter or announcement and send it to all {(subscribers || []).length} subscriber(s) at once via Resend.</p>
             </div>
 
             {emailSent ? (
@@ -1911,7 +1957,7 @@ export default function AdminDashboard({
                 <span className="material-symbols-outlined text-3xl text-emerald-600">check_circle</span>
                 <div>
                   <p className="font-bold text-emerald-800">Email Sent Successfully!</p>
-                  <p className="text-xs text-emerald-700 mt-0.5">Your message has been dispatched to all {subscribers.length} subscriber(s).</p>
+                  <p className="text-xs text-emerald-700 mt-0.5">Your message has been dispatched to all {(subscribers || []).length} subscriber(s).</p>
                 </div>
                 <button
                   onClick={() => { setEmailSent(false); setEmailSubject(''); setEmailBody(''); }}
@@ -1924,10 +1970,10 @@ export default function AdminDashboard({
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  if (!emailSubject || !emailBody || subscribers.length === 0) return;
+                  if (!emailSubject || !emailBody || (subscribers || []).length === 0) return;
                   setEmailSending(true);
                   try {
-                    const bccList = subscribers.map(s => s.email).join(',');
+                    const bccList = (subscribers || []).map(s => s.email).join(',');
                     await fetch('/api/send-email', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
@@ -1973,11 +2019,11 @@ export default function AdminDashboard({
                 </div>
                 <div className="flex justify-between items-center pt-2">
                   <p className="text-gray-500 text-[11px]">
-                    Will be sent to <strong>{subscribers.length}</strong> subscriber(s) via Resend.
+                    Will be sent to <strong>{(subscribers || []).length}</strong> subscriber(s) via Resend.
                   </p>
                   <button
                     type="submit"
-                    disabled={emailSending || subscribers.length === 0}
+                    disabled={emailSending || (subscribers || []).length === 0}
                     className="px-6 py-2.5 bg-[#b0004a] text-white rounded-full text-xs font-bold hover:bg-[#90003b] shadow-sm transition-all disabled:opacity-50 flex items-center gap-2"
                   >
                     {emailSending ? (
@@ -2229,6 +2275,74 @@ export default function AdminDashboard({
             >
               Close Receipt Audit
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Global Custom Toast Notification Banner */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-[100] animate-fadeIn max-w-md w-full px-4">
+          <div className={`p-4 rounded-2xl shadow-2xl border flex items-center gap-3 backdrop-blur-md transition-all ${
+            toast.type === 'error'
+              ? 'bg-red-50/95 border-red-200 text-red-900'
+              : toast.type === 'warning'
+              ? 'bg-amber-50/95 border-amber-200 text-amber-900'
+              : 'bg-emerald-50/95 border-emerald-200 text-emerald-950'
+          }`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
+              toast.type === 'error'
+                ? 'bg-red-600 text-white'
+                : toast.type === 'warning'
+                ? 'bg-amber-500 text-white'
+                : 'bg-[#b0004a] text-white'
+            }`}>
+              <span className="material-symbols-outlined text-xl">
+                {toast.type === 'error' ? 'error' : toast.type === 'warning' ? 'warning' : 'check_circle'}
+              </span>
+            </div>
+            <div className="flex-1 pr-2 space-y-0.5">
+              <p className="font-heading font-bold text-sm leading-snug">{toast.title}</p>
+              <p className="text-xs opacity-90 leading-normal">{toast.message}</p>
+            </div>
+            <button 
+              onClick={() => setToast(null)}
+              className="text-gray-400 hover:text-gray-700 p-1 rounded-lg transition-colors"
+            >
+              <span className="material-symbols-outlined text-base">close</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Global Custom Action Confirmation Dialog Modal */}
+      {confirmDialog && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-6 text-center animate-scaleUp">
+            <div className="w-16 h-16 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto shadow-inner">
+              <span className="material-symbols-outlined text-3xl">delete_forever</span>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-heading font-bold text-xl text-gray-900">{confirmDialog.title}</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">{confirmDialog.message}</p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="flex-1 py-3 bg-gray-100 text-gray-700 text-xs font-bold rounded-full hover:bg-gray-200 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const action = confirmDialog.onConfirm;
+                  setConfirmDialog(null);
+                  if (action) action();
+                }}
+                className="flex-1 py-3 bg-red-600 text-white text-xs font-bold rounded-full hover:bg-red-700 shadow-md transition-all"
+              >
+                Yes, Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
