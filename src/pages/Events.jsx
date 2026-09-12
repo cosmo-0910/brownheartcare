@@ -134,8 +134,8 @@ export default function Events({ setCurrentPage, openVolunteerModal, openDonateM
                   summary: item.desc || 'Community support and nutritional outreach initiative.',
                   stats: {
                     beneficiariesScreened: 'Multiple Families',
-                    relief fundsAssessed: 'Assessed Live',
-                    relief suppliesDistributed: 'Aid Distributed',
+                    reliefFundsAssessed: 'Assessed Live',
+                    reliefSuppliesDistributed: 'Aid Distributed',
                     volunteersParticipated: 'Active Volunteers'
                   },
                   beneficiaryQuote: '"The care and dedication of the Brown\'s Heart Care team changed our lives."',
@@ -298,11 +298,11 @@ export default function Events({ setCurrentPage, openVolunteerModal, openDonateM
                       </div>
                       <div className="bg-[#f9f9f9] p-3 rounded-xl">
                         <span className="text-gray-500 block text-[10px]">Relief Provided</span>
-                        <span className="font-heading font-bold text-base text-[#b0004a]">{selectedOutreachDetail.stats.relief suppliesDistributed}</span>
+                        <span className="font-heading font-bold text-base text-[#b0004a]">{selectedOutreachDetail.stats.reliefSuppliesDistributed}</span>
                       </div>
                       <div className="bg-[#f9f9f9] p-3 rounded-xl">
                         <span className="text-gray-500 block text-[10px]">relief funds Assessed</span>
-                        <span className="font-heading font-bold text-base text-[#1a1c1c]">{selectedOutreachDetail.stats.relief fundsAssessed}</span>
+                        <span className="font-heading font-bold text-base text-[#1a1c1c]">{selectedOutreachDetail.stats.reliefFundsAssessed}</span>
                       </div>
                       <div className="bg-[#f9f9f9] p-3 rounded-xl">
                         <span className="text-gray-500 block text-[10px]">support team</span>
