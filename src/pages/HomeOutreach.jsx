@@ -167,35 +167,45 @@ export default function HomeOutreach({ setCurrentPage }) {
           {events && events.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {events.slice(0, 2).map((evt) => (
-                <div key={evt.id} className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 space-y-6">
-                  <div className="flex justify-between items-center">
-                    <div className="w-10 h-10 rounded-xl bg-[#ffd9de] text-[#b0004a] flex items-center justify-center">
-                      <span className="material-symbols-outlined text-xl">volunteer_activism</span>
-                    </div>
-                    <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
+                <div key={evt.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col">
+                  {/* Event Flyer / Image */}
+                  <div className="h-48 w-full bg-gray-100 relative">
+                    <img 
+                      src={evt.img || '/hero/PHOTO-2026-09-01-13-37-18.jpg'} 
+                      alt={evt.title} 
+                      className="w-full h-full object-cover" 
+                    />
+                    <span className="absolute top-4 right-4 bg-white text-gray-800 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
                       {evt.date}
                     </span>
                   </div>
-                  <div>
-                    <h3 className="font-heading font-bold text-lg text-[#1a1c1c] mb-1">{evt.title}</h3>
-                    <p className="text-gray-500 text-xs flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm text-[#b0004a]">location_on</span>
-                      <span>{evt.location}</span>
-                    </p>
-                  </div>
-                  <div className="flex gap-4 pt-2">
-                    <button 
-                      onClick={() => navTo('events')}
-                      className="bg-[#b0004a] text-white px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-[#90003b] transition-all"
-                    >
-                      Join as Volunteer
-                    </button>
-                    <button 
-                      onClick={() => navTo('events')}
-                      className="text-gray-600 hover:text-[#b0004a] text-xs font-semibold py-2.5 px-3"
-                    >
-                      Learn More
-                    </button>
+                  
+                  {/* Event Details */}
+                  <div className="p-6 md:p-8 space-y-6 flex-grow flex flex-col justify-between">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-[#ffd9de] text-[#b0004a] flex items-center justify-center mb-4">
+                        <span className="material-symbols-outlined text-xl">volunteer_activism</span>
+                      </div>
+                      <h3 className="font-heading font-bold text-lg text-[#1a1c1c] mb-2">{evt.title}</h3>
+                      <p className="text-gray-500 text-xs flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-sm text-[#b0004a]">location_on</span>
+                        <span>{evt.location}</span>
+                      </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                      <button 
+                        onClick={() => navTo('events')}
+                        className="flex-1 bg-[#b0004a] text-white px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-[#90003b] transition-all text-center"
+                      >
+                        Join as Volunteer
+                      </button>
+                      <button 
+                        onClick={() => navTo('events')}
+                        className="flex-1 text-gray-600 hover:text-[#b0004a] hover:bg-gray-50 border border-transparent hover:border-gray-200 text-xs font-semibold py-2.5 px-3 rounded-full transition-all text-center"
+                      >
+                        Learn More
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
