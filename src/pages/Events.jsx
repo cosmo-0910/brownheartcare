@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 
-export default function Events({ setCurrentPage, openVolunteerModal, openDonateModal }) {
+export default function Events({ setCurrentPage, openVolunteerModal, openDonateModal, openSponsorPage }) {
   const { events: contextEvents, highlights: contextHighlights } = useSiteSettings();
   const [selectedOutreachDetail, setSelectedOutreachDetail] = useState(null);
   const [selectedEventDetail, setSelectedEventDetail] = useState(null);
@@ -83,17 +83,25 @@ export default function Events({ setCurrentPage, openVolunteerModal, openDonateM
                     </div>
                   </div>
 
-                  <div className="p-6 pt-0 flex flex-col sm:flex-row gap-3">
-                    <button 
-                      onClick={() => openVolunteerModal && openVolunteerModal(evt)}
-                      className="flex-1 bg-[#b0004a] text-white py-3 rounded-full text-xs font-semibold hover:bg-[#90003b] transition-all shadow-sm flex items-center justify-center gap-1.5"
-                    >
-                      <span className="material-symbols-outlined text-base">how_to_reg</span>
-                      <span>Volunteer Now</span>
-                    </button>
+                  <div className="p-6 pt-0 flex flex-col gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button 
+                        onClick={() => openVolunteerModal && openVolunteerModal(evt)}
+                        className="flex-1 bg-[#b0004a] text-white py-3 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[#90003b] transition-all shadow-sm flex items-center justify-center gap-1.5"
+                      >
+                        <span className="material-symbols-outlined text-base">how_to_reg</span>
+                        <span>Volunteer Now</span>
+                      </button>
+                      <button 
+                        onClick={() => openSponsorPage ? openSponsorPage(evt) : navTo('donate')}
+                        className="flex-1 bg-white border-2 border-[#b0004a] text-[#b0004a] py-3 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[#b0004a] hover:text-white transition-all shadow-sm flex items-center justify-center gap-1"
+                      >
+                        <span>Sponsor Outreach</span>
+                      </button>
+                    </div>
                     <button 
                       onClick={() => setSelectedEventDetail(evt)}
-                      className="flex-1 border border-gray-400 text-gray-700 py-3 rounded-full text-xs font-semibold hover:bg-gray-100 transition-all flex items-center justify-center gap-1"
+                      className="w-full border border-gray-400 text-gray-700 py-2.5 rounded-full text-xs font-semibold hover:bg-gray-100 transition-all flex items-center justify-center gap-1"
                     >
                       <span className="material-symbols-outlined text-base">info</span>
                       <span>Learn More</span>

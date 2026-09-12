@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function Donate({ setCurrentPage, onAddDonation }) {
+export default function Donate({ setCurrentPage, onAddDonation, targetSponsorEvent }) {
   const [currency, setCurrency] = useState('NGN'); // 'NGN' or 'USD'
   const [frequency, setFrequency] = useState('one-time');
   const [selectedPreset, setSelectedPreset] = useState(25000);
@@ -56,7 +56,8 @@ export default function Donate({ setCurrentPage, onAddDonation }) {
         amount: currentAmount,
         currency: currency,
         method: donorInfo.paymentMethod === 'card' ? 'Online Card / Stripe' : 'Bank Transfer',
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        event_title: targetSponsorEvent ? targetSponsorEvent.title : null
       });
     }
     setDonated(true);
@@ -92,7 +93,7 @@ export default function Donate({ setCurrentPage, onAddDonation }) {
 
           {/* Right Column: Secure Donation Card */}
           <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border-t-4 border-[#b0004a] space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-4">
               <h2 className="font-heading font-bold text-xl text-[#1a1c1c]">Make a Secure Donation</h2>
 
               {/* NGN vs USD Currency Switcher */}
@@ -117,6 +118,16 @@ export default function Donate({ setCurrentPage, onAddDonation }) {
                 </button>
               </div>
             </div>
+
+            {targetSponsorEvent && (
+              <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl mb-4 flex items-start gap-3">
+                <span className="material-symbols-outlined text-emerald-600">verified</span>
+                <div>
+                  <h4 className="font-bold text-emerald-900 text-sm">Sponsoring Outreach</h4>
+                  <p className="text-emerald-700 text-xs font-medium">{targetSponsorEvent.title}</p>
+                </div>
+              </div>
+            )}
 
             {!donated ? (
               <form onSubmit={handleDonateSubmit} className="space-y-6">

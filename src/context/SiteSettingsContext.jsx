@@ -199,10 +199,24 @@ export function SiteSettingsProvider({ children }) {
   };
 
   // Helper functions for Donations
-  const addDonation = (newDonation) => {
+  const addDonation = async (newDonation) => {
     const updated = [newDonation, ...donations];
     setDonations(updated);
     localStorage.setItem('bhc_donations', JSON.stringify(updated));
+
+    try {
+      await supabase.from('donations').insert([{
+        donor_name: newDonation.donorName || newDonation.name || 'Anonymous Donor',
+        donor_email: newDonation.email || 'donor@example.com',
+        amount: newDonation.amount,
+        currency: newDonation.currency || 'NGN',
+        payment_method: newDonation.method || newDonation.paymentMethod || 'Online',
+        event_title: newDonation.event_title || null,
+        transaction_ref: newDonation.id
+      }]);
+    } catch (e) {
+      console.warn('Local save successful; Supabase sync deferred:', e.message);
+    }
   };
 
   const updateStats = (newStats) => {

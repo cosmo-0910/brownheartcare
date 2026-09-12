@@ -17,6 +17,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState('home-outreach');
   const [isVolunteerOpen, setIsVolunteerOpen] = useState(false);
   const [targetEvent, setTargetEvent] = useState(null);
+  const [targetSponsorEvent, setTargetSponsorEvent] = useState(null);
   const { addDonation, addVolunteer } = useSiteSettings();
 
   // Check URL pathname for /bhcareexec
@@ -36,18 +37,24 @@ export default function App() {
     setTargetEvent(null);
   };
 
+  const openSponsorPage = (evt) => {
+    setTargetSponsorEvent(evt || null);
+    setCurrentPage('donate');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'home-outreach':
-        return <HomeOutreach setCurrentPage={setCurrentPage} openVolunteerModal={openVolunteerModal} />;
+        return <HomeOutreach setCurrentPage={setCurrentPage} openVolunteerModal={openVolunteerModal} openSponsorPage={openSponsorPage} />;
       case 'home-impact':
         return <HomeImpact setCurrentPage={setCurrentPage} openVolunteerModal={openVolunteerModal} />;
       case 'history':
         return <OurHistory setCurrentPage={setCurrentPage} openVolunteerModal={openVolunteerModal} />;
       case 'events':
-        return <Events setCurrentPage={setCurrentPage} openVolunteerModal={openVolunteerModal} />;
+        return <Events setCurrentPage={setCurrentPage} openVolunteerModal={openVolunteerModal} openSponsorPage={openSponsorPage} />;
       case 'donate':
-        return <Donate setCurrentPage={setCurrentPage} onAddDonation={addDonation} openVolunteerModal={openVolunteerModal} />;
+        return <Donate setCurrentPage={setCurrentPage} onAddDonation={addDonation} openVolunteerModal={openVolunteerModal} targetSponsorEvent={targetSponsorEvent} />;
       case 'programs':
         return <Programs setCurrentPage={setCurrentPage} openVolunteerModal={openVolunteerModal} />;
       case 'faq':
@@ -57,7 +64,7 @@ export default function App() {
       case 'bhcareexec':
         return <AdminDashboard setCurrentPage={setCurrentPage} />;
       default:
-        return <HomeOutreach setCurrentPage={setCurrentPage} openVolunteerModal={openVolunteerModal} />;
+        return <HomeOutreach setCurrentPage={setCurrentPage} openVolunteerModal={openVolunteerModal} openSponsorPage={openSponsorPage} />;
     }
   };
 

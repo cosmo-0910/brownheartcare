@@ -8,7 +8,7 @@ import { useSiteSettings } from '../context/SiteSettingsContext';const heroImage
   '/hero/PHOTO-2026-09-01-13-45-14.jpg',
 ];
 
-export default function HomeOutreach({ setCurrentPage }) {
+export default function HomeOutreach({ setCurrentPage, openVolunteerModal, openSponsorPage }) {
   const { events, highlights: contextHighlights } = useSiteSettings();
   const [activeMediaTab, setActiveMediaTab] = useState('all');
   const [playingVideo, setPlayingVideo] = useState(false);
@@ -169,11 +169,11 @@ export default function HomeOutreach({ setCurrentPage }) {
               {events.slice(0, 2).map((evt) => (
                 <div key={evt.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col">
                   {/* Event Flyer / Image */}
-                  <div className="h-48 w-full bg-gray-100 relative">
+                  <div className="aspect-square w-full bg-gray-100 relative flex items-center justify-center overflow-hidden">
                     <img 
                       src={evt.img || '/hero/PHOTO-2026-09-01-13-37-18.jpg'} 
                       alt={evt.title} 
-                      className="w-full h-full object-cover" 
+                      className="w-full h-full object-contain bg-black/5" 
                     />
                     <span className="absolute top-4 right-4 bg-white text-gray-800 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
                       {evt.date}
@@ -194,16 +194,16 @@ export default function HomeOutreach({ setCurrentPage }) {
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 pt-2">
                       <button 
-                        onClick={() => navTo('events')}
-                        className="flex-1 bg-[#b0004a] text-white px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-[#90003b] transition-all text-center"
+                        onClick={() => openVolunteerModal(evt)}
+                        className="flex-1 bg-[#b0004a] text-white px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[#90003b] transition-all text-center shadow-sm"
                       >
-                        Join as Volunteer
+                        Volunteer
                       </button>
                       <button 
-                        onClick={() => navTo('events')}
-                        className="flex-1 text-gray-600 hover:text-[#b0004a] hover:bg-gray-50 border border-transparent hover:border-gray-200 text-xs font-semibold py-2.5 px-3 rounded-full transition-all text-center"
+                        onClick={() => openSponsorPage ? openSponsorPage(evt) : navTo('donate')}
+                        className="flex-1 bg-white border-2 border-[#b0004a] text-[#b0004a] px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[#b0004a] hover:text-white transition-all text-center shadow-sm"
                       >
-                        Learn More
+                        Sponsor Outreach
                       </button>
                     </div>
                   </div>
@@ -258,7 +258,7 @@ export default function HomeOutreach({ setCurrentPage }) {
                   activeMediaTab === 'relief fund' ? 'bg-white text-[#b0004a] shadow-sm' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                relief Relief
+                Community Relief
               </button>
               <button
                 onClick={() => setActiveMediaTab('food')}

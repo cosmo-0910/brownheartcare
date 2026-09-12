@@ -617,8 +617,11 @@ export default function AdminDashboard({
                       className="flex justify-between items-center p-3.5 bg-gray-50 rounded-xl text-xs cursor-pointer hover:bg-[#ffd9de]/20 border border-transparent hover:border-[#b0004a] transition-all"
                     >
                       <div>
-                        <p className="font-bold text-gray-900">{d.name}</p>
-                        <p className="text-[11px] text-gray-500">{d.email} • {d.date}</p>
+                        <p className="font-bold text-gray-900">{d.name || d.donor_name || 'Anonymous Donor'}</p>
+                        <p className="text-[11px] text-gray-500">
+                          {d.email || d.donor_email} • {d.date || new Date(d.created_at).toLocaleDateString()} 
+                          {d.event_title && <span className="ml-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-md font-bold">Sponsored: {d.event_title}</span>}
+                        </p>
                       </div>
                       <span className="font-heading font-bold text-[#b0004a]">
                         {d.currency === 'NGN' ? `₦${Number(d.amount).toLocaleString()}` : `$${d.amount}`}
@@ -1752,6 +1755,7 @@ export default function AdminDashboard({
                     <th className="p-3.5">Frequency</th>
                     <th className="p-3.5">Amount</th>
                     <th className="p-3.5">Payment Method</th>
+                    <th className="p-3.5">Sponsorship</th>
                     <th className="p-3.5">Date</th>
                     <th className="p-3.5">Action</th>
                   </tr>
@@ -1785,7 +1789,16 @@ export default function AdminDashboard({
                           {d.paymentMethod === 'card' ? 'Credit / Debit Card' : (d.paymentMethod === 'transfer' ? 'Direct Bank Transfer' : (d.method || 'Direct Bank Transfer'))}
                         </span>
                       </td>
-                      <td className="p-3.5 text-gray-500">{d.date}</td>
+                      <td className="p-3.5">
+                        {d.event_title ? (
+                          <span className="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded text-[11px] font-bold">
+                            {d.event_title}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 italic text-[11px]">General Support</span>
+                        )}
+                      </td>
+                      <td className="p-3.5 text-gray-500">{d.date || new Date(d.created_at).toLocaleDateString()}</td>
                       <td className="p-3.5">
                         <button className="text-[#b0004a] font-bold hover:underline">View Receipt</button>
                       </td>
@@ -2005,8 +2018,14 @@ export default function AdminDashboard({
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-500">Payment Channel:</span>
-                <span className="font-semibold text-gray-800">{selectedDonor.method || 'Direct Bank Transfer'}</span>
+                <span className="font-semibold text-gray-800">{selectedDonor.method || selectedDonor.paymentMethod || 'Direct Bank Transfer'}</span>
               </div>
+              {selectedDonor.event_title && (
+                <div className="flex justify-between py-2 border-b border-gray-100">
+                  <span className="text-emerald-700 font-bold">Sponsored Event:</span>
+                  <span className="font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">{selectedDonor.event_title}</span>
+                </div>
+              )}
               <div className="flex justify-between py-2 items-center">
                 <span className="text-gray-500">Total Donated:</span>
                 <span className="font-heading font-extrabold text-xl text-[#b0004a]">

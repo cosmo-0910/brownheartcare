@@ -37,6 +37,10 @@ ALTER TABLE public.volunteers ADD COLUMN IF NOT EXISTS detailed_address TEXT;
 ALTER TABLE public.volunteers ADD COLUMN IF NOT EXISTS occupation TEXT;
 ALTER TABLE public.volunteers ADD COLUMN IF NOT EXISTS emergency_contact TEXT;
 ALTER TABLE public.volunteers ADD COLUMN IF NOT EXISTS motivation TEXT;
+ALTER TABLE public.volunteers ADD COLUMN IF NOT EXISTS event_title TEXT;
+
+-- Idempotent column additions for Donations Table
+ALTER TABLE public.donations ADD COLUMN IF NOT EXISTS event_title TEXT;
 
 -- 3. Create Outreach Events Table
 CREATE TABLE IF NOT EXISTS public.events (
