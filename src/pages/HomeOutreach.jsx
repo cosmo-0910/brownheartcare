@@ -167,15 +167,19 @@ export default function HomeOutreach({ setCurrentPage, openVolunteerModal, openS
           {events && events.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {events.slice(0, 2).map((evt) => (
-                <div key={evt.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col">
+                <div 
+                  key={evt.id} 
+                  onClick={() => navTo('events')}
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all cursor-pointer flex flex-col group"
+                >
                   {/* Event Flyer / Image */}
                   <div className="aspect-square w-full bg-gray-100 relative flex items-center justify-center overflow-hidden">
                     <img 
                       src={evt.img || '/hero/PHOTO-2026-09-01-13-37-18.jpg'} 
                       alt={evt.title} 
-                      className="w-full h-full object-contain bg-black/5" 
+                      className="w-full h-full object-contain bg-black/5 group-hover:scale-105 transition-transform duration-300" 
                     />
-                    <span className="absolute top-4 right-4 bg-white text-gray-800 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+                    <span className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
                       {evt.date}
                     </span>
                   </div>
@@ -186,25 +190,49 @@ export default function HomeOutreach({ setCurrentPage, openVolunteerModal, openS
                       <div className="w-10 h-10 rounded-xl bg-[#ffd9de] text-[#b0004a] flex items-center justify-center mb-4">
                         <span className="material-symbols-outlined text-xl">volunteer_activism</span>
                       </div>
-                      <h3 className="font-heading font-bold text-lg text-[#1a1c1c] mb-2">{evt.title}</h3>
-                      <p className="text-gray-500 text-xs flex items-center gap-1.5">
+                      <h3 className="font-heading font-bold text-lg text-[#1a1c1c] mb-2 group-hover:text-[#b0004a] transition-colors">{evt.title}</h3>
+                      <p className="text-gray-500 text-xs flex items-center gap-1.5 mb-2">
                         <span className="material-symbols-outlined text-sm text-[#b0004a]">location_on</span>
                         <span>{evt.location}</span>
                       </p>
+                      {evt.desc && (
+                        <p className="text-gray-600 text-xs leading-relaxed line-clamp-2">
+                          {evt.desc}
+                        </p>
+                      )}
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                      <button 
-                        onClick={() => openVolunteerModal(evt)}
-                        className="flex-1 bg-[#b0004a] text-white px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[#90003b] transition-all text-center shadow-sm"
-                      >
-                        Volunteer
-                      </button>
-                      <button 
-                        onClick={() => openSponsorPage ? openSponsorPage(evt) : navTo('donate')}
-                        className="flex-1 bg-white border-2 border-[#b0004a] text-[#b0004a] px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[#b0004a] hover:text-white transition-all text-center shadow-sm"
-                      >
-                        Sponsor Outreach
-                      </button>
+                    
+                    <div className="space-y-3 pt-2">
+                      <div className="flex flex-col sm:flex-row gap-2.5">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openVolunteerModal(evt);
+                          }}
+                          className="flex-1 bg-[#b0004a] text-white px-3 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[#90003b] transition-all text-center shadow-sm"
+                        >
+                          Volunteer
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (openSponsorPage) openSponsorPage(evt);
+                            else navTo('donate');
+                          }}
+                          className="flex-1 bg-white border-2 border-[#b0004a] text-[#b0004a] px-3 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[#b0004a] hover:text-white transition-all text-center shadow-sm"
+                        >
+                          Sponsor Outreach
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navTo('events');
+                          }}
+                          className="flex-1 bg-gray-100 border border-gray-200 text-gray-700 px-3 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-gray-200 transition-all text-center shadow-sm"
+                        >
+                          Learn More
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

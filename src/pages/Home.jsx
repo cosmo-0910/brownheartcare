@@ -221,45 +221,57 @@ export default function Home({ setCurrentPage, openDonateModal, openVolunteerMod
           {contextEvents && contextEvents.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {contextEvents.slice(0, 2).map((evt) => (
-                <div key={evt.id} className="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all border-t-4 border-primary">
-                  <div 
-                    className="h-60 w-full bg-cover bg-center"
-                    style={{
-                      backgroundImage: `url('${evt.img || '/hero/PHOTO-2026-09-01-13-37-18.jpg'}')`
-                    }}
-                  />
-                  <div className="p-6 space-y-4">
-                    <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold">
-                      {evt.typeLabel || 'Community Outreach'}
-                    </span>
-                    <h3 className="font-heading font-bold text-xl text-on-surface">{evt.title}</h3>
-                    <p className="text-xs text-on-surface-variant leading-relaxed line-clamp-3">
-                      {evt.desc}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-secondary pt-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-primary text-base">calendar_today</span>
-                        <span>{evt.date}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-primary text-base">location_on</span>
-                        <span>{evt.location}</span>
+                <div 
+                  key={evt.id} 
+                  onClick={() => navTo('events')}
+                  className="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all border-t-4 border-primary cursor-pointer flex flex-col justify-between group"
+                >
+                  <div>
+                    <div 
+                      className="h-60 w-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
+                      style={{
+                        backgroundImage: `url('${evt.img || '/hero/PHOTO-2026-09-01-13-37-18.jpg'}')`
+                      }}
+                    />
+                    <div className="p-6 space-y-4">
+                      <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold">
+                        {evt.typeLabel || 'Community Outreach'}
+                      </span>
+                      <h3 className="font-heading font-bold text-xl text-on-surface group-hover:text-primary transition-colors">{evt.title}</h3>
+                      <p className="text-xs text-on-surface-variant leading-relaxed line-clamp-3">
+                        {evt.desc}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-secondary pt-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-primary text-base">calendar_today</span>
+                          <span>{evt.date}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-primary text-base">location_on</span>
+                          <span>{evt.location}</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex gap-3 pt-2">
-                      <button
-                        onClick={() => openVolunteerModal && openVolunteerModal(evt)}
-                        className="flex-1 py-3 rounded-full bg-gradient-to-r from-primary to-primary-container text-white text-xs font-bold shadow-sm hover:opacity-95 transition-all"
-                      >
-                        Volunteer for Event
-                      </button>
-                      <button
-                        onClick={() => navTo('events')}
-                        className="py-3 px-5 rounded-full border border-secondary text-secondary text-xs font-semibold hover:bg-surface-container"
-                      >
-                        Details
-                      </button>
-                    </div>
+                  </div>
+                  <div className="p-6 pt-0 flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (openVolunteerModal) openVolunteerModal(evt);
+                      }}
+                      className="flex-1 py-3 rounded-full bg-gradient-to-r from-primary to-primary-container text-white text-xs font-bold shadow-sm hover:opacity-95 transition-all text-center"
+                    >
+                      Volunteer for Event
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navTo('events');
+                      }}
+                      className="py-3 px-6 rounded-full border border-secondary text-secondary text-xs font-semibold hover:bg-surface-container text-center"
+                    >
+                      Learn More
+                    </button>
                   </div>
                 </div>
               ))}
