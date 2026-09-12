@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
+import { supabase } from '../lib/supabase';
 
 export default function AdminDashboard({ 
   setCurrentPage, 
@@ -49,7 +50,31 @@ export default function AdminDashboard({
   const [editingEvent, setEditingEvent] = useState(null);
   const [invitationMessage, setInvitationMessage] = useState('');
   const [invitationSent, setInvitationSent] = useState(false);
+  const [selectedEventFilter, setSelectedEventFilter] = useState('All');
   const [showLivePreview, setShowLivePreview] = useState(false);
+
+  // Subscribers & Mass Email State
+  const [subscribers, setSubscribers] = useState([]);
+  const [subscribersLoading, setSubscribersLoading] = useState(false);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+
+  // Load subscribers from Supabase when the tab is activated
+  useEffect(() => {
+    if (activeTab === 'subscribers') {
+      setSubscribersLoading(true);
+      supabase
+        .from('subscribers')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .then(({ data, error }) => {
+          if (!error && data) setSubscribers(data);
+          setSubscribersLoading(false);
+        });
+    }
+  }, [activeTab]);
 
   // Safe Date Formatting Helper to prevent crashes from bad date strings
   const safeFormatDate = (val) => {
@@ -519,6 +544,7 @@ export default function AdminDashboard({
             { id: 'events-cms', label: 'Outreach Events', icon: 'event' },
             { id: 'highlights-cms', label: 'Media & Video Uploads', icon: 'video_library' },
             { id: 'donations', label: `Donations (${donations.length})`, icon: 'payments' },
+            { id: 'subscribers', label: 'Subscribers & Emailing', icon: 'mark_email_read' },
           ].map(tab => (
             <button
               key={tab.id}
@@ -1811,7 +1837,170 @@ export default function AdminDashboard({
         )}
       </div>
 
+      {/* SUBSCRIBERS & EMAILING TAB */}
+      {activeTab === 'subscribers' && (
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-8 space-y-8 animate-fadeIn">
+
+          {/* Subscriber List */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-5">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-4">
+              <div>
+                <h3 className="font-heading font-bold text-xl text-gray-900">Newsletter Subscribers ({subscribers.length})</h3>
+                <p className="text-xs text-gray-500 mt-1">All email addresses subscribed from the website footer newsletter form.</p>
+              </div>
+              {subscribersLoading && (
+                <span className="text-xs text-gray-500 animate-pulse">Loading subscribers...</span>
+              )}
+            </div>
+
+            {subscribers.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="bg-gray-100 text-gray-700 font-bold border-b border-gray-200">
+                      <th className="p-3.5">#</th>
+                      <th className="p-3.5">Email Address</th>
+                      <th className="p-3.5">Status</th>
+                      <th className="p-3.5">Subscribed On</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {subscribers.map((sub, i) => (
+                      <tr key={sub.id} className="hover:bg-[#ffd9de]/10 transition-colors">
+                        <td className="p-3.5 text-gray-400 font-bold">{i + 1}</td>
+                        <td className="p-3.5 font-semibold text-gray-900">{sub.email}</td>
+                        <td className="p-3.5">
+                          <span className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                            sub.status === 'active'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {sub.status || 'active'}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-gray-500">
+                          {sub.created_at ? new Date(sub.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              !subscribersLoading && (
+                <div className="text-center py-12 bg-gray-50 rounded-2xl border border-gray-200 space-y-2">
+                  <span className="material-symbols-outlined text-4xl text-gray-400">mark_email_unread</span>
+                  <h4 className="font-bold text-gray-700 text-sm">No Subscribers Yet</h4>
+                  <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                    Once visitors subscribe using the newsletter form in the footer, their emails will appear here.
+                  </p>
+                </div>
+              )
+            )}
+          </div>
+
+          {/* Mass Email Composer */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-5">
+            <div className="border-b border-gray-100 pb-4">
+              <h3 className="font-heading font-bold text-xl text-gray-900">Send Mass Email to All Subscribers</h3>
+              <p className="text-xs text-gray-500 mt-1">Compose a newsletter or announcement and send it to all {subscribers.length} subscriber(s) at once via Resend.</p>
+            </div>
+
+            {emailSent ? (
+              <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 p-5 rounded-2xl">
+                <span className="material-symbols-outlined text-3xl text-emerald-600">check_circle</span>
+                <div>
+                  <p className="font-bold text-emerald-800">Email Sent Successfully!</p>
+                  <p className="text-xs text-emerald-700 mt-0.5">Your message has been dispatched to all {subscribers.length} subscriber(s).</p>
+                </div>
+                <button
+                  onClick={() => { setEmailSent(false); setEmailSubject(''); setEmailBody(''); }}
+                  className="ml-auto text-xs text-emerald-700 font-bold underline"
+                >
+                  Compose New
+                </button>
+              </div>
+            ) : (
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!emailSubject || !emailBody || subscribers.length === 0) return;
+                  setEmailSending(true);
+                  try {
+                    const bccList = subscribers.map(s => s.email).join(',');
+                    await fetch('/api/send-email', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        type: 'mass_email',
+                        to: 'brownheartcare@gmail.com',
+                        bcc: bccList,
+                        subject: emailSubject,
+                        message: emailBody
+                      })
+                    });
+                    setEmailSent(true);
+                  } catch (err) {
+                    alert('Failed to send email. Please check your API configuration.');
+                    console.error(err);
+                  } finally {
+                    setEmailSending(false);
+                  }
+                }}
+                className="space-y-4 text-xs"
+              >
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1.5">Email Subject Line</label>
+                  <input
+                    type="text"
+                    required
+                    value={emailSubject}
+                    onChange={(e) => setEmailSubject(e.target.value)}
+                    placeholder="e.g. Brown Heart Care – Monthly Impact Update"
+                    className="w-full bg-[#eee] p-3.5 rounded-xl border border-transparent font-semibold text-gray-900 focus:bg-white focus:border-[#b0004a] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1.5">Email Body (HTML supported)</label>
+                  <textarea
+                    required
+                    rows={8}
+                    value={emailBody}
+                    onChange={(e) => setEmailBody(e.target.value)}
+                    placeholder="Write your newsletter or announcement here. You can use basic HTML tags for formatting."
+                    className="w-full bg-[#eee] p-3.5 rounded-xl border border-transparent font-medium text-gray-900 focus:bg-white focus:border-[#b0004a] focus:outline-none resize-none leading-relaxed"
+                  />
+                </div>
+                <div className="flex justify-between items-center pt-2">
+                  <p className="text-gray-500 text-[11px]">
+                    Will be sent to <strong>{subscribers.length}</strong> subscriber(s) via Resend.
+                  </p>
+                  <button
+                    type="submit"
+                    disabled={emailSending || subscribers.length === 0}
+                    className="px-6 py-2.5 bg-[#b0004a] text-white rounded-full text-xs font-bold hover:bg-[#90003b] shadow-sm transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {emailSending ? (
+                      <>
+                        <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                        <span>Sending...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-sm">send</span>
+                        <span>Send to All Subscribers</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* LIVE PREVIEW MODAL OVERLAY */}
+
       {showLivePreview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-5xl w-full p-6 shadow-2xl border border-gray-200 space-y-6 max-h-[90vh] overflow-y-auto relative">

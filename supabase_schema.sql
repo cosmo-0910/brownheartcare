@@ -79,12 +79,21 @@ CREATE TABLE IF NOT EXISTS public.site_content (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 6. Create Subscribers Table (For newsletter and mass emailing)
+CREATE TABLE IF NOT EXISTS public.subscribers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    status TEXT DEFAULT 'active'
+);
+
 -- SECURITY AUDIT & ROW LEVEL SECURITY (RLS) POLICIES
 ALTER TABLE public.donations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.volunteers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.highlights ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.site_content ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscribers ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies first to avoid duplicate errors on re-run
 DROP POLICY IF EXISTS "Allow public read events" ON public.events;
@@ -92,8 +101,10 @@ DROP POLICY IF EXISTS "Allow public read highlights" ON public.highlights;
 DROP POLICY IF EXISTS "Allow public read site_content" ON public.site_content;
 DROP POLICY IF EXISTS "Allow public insert donations" ON public.donations;
 DROP POLICY IF EXISTS "Allow public insert volunteers" ON public.volunteers;
+DROP POLICY IF EXISTS "Allow public insert subscribers" ON public.subscribers;
 DROP POLICY IF EXISTS "Restrict public select donations" ON public.donations;
 DROP POLICY IF EXISTS "Restrict public select volunteers" ON public.volunteers;
+DROP POLICY IF EXISTS "Restrict public select subscribers" ON public.subscribers;
 
 -- Public read permissions
 CREATE POLICY "Allow public read events" ON public.events FOR SELECT USING (true);
@@ -103,8 +114,10 @@ CREATE POLICY "Allow public read site_content" ON public.site_content FOR SELECT
 -- Public insert permissions
 CREATE POLICY "Allow public insert donations" ON public.donations FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public insert volunteers" ON public.volunteers FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public insert subscribers" ON public.subscribers FOR INSERT WITH CHECK (true);
 
 -- Restricted read permissions for donor and volunteer PII
 CREATE POLICY "Restrict public select donations" ON public.donations FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Restrict public select volunteers" ON public.volunteers FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Restrict public select subscribers" ON public.subscribers FOR SELECT USING (auth.role() = 'authenticated');
 

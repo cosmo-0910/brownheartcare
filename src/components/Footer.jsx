@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
+import { supabase } from '../lib/supabase';
 
 export default function Footer({ setCurrentPage, openDonateModal, openVolunteerModal }) {
   const { settings } = useSiteSettings();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (email) {
+    if (!email) return;
+    try {
+      const { error } = await supabase
+        .from('subscribers')
+        .insert([{ email: email.trim().toLowerCase() }]);
+      if (error && error.code !== '23505') { // Ignore duplicate entry error
+        throw error;
+      }
+    } catch (err) {
+      console.warn('Subscription notice:', err.message);
+    } finally {
       setSubscribed(true);
       setTimeout(() => setSubscribed(false), 5000);
       setEmail('');
@@ -136,12 +147,11 @@ export default function Footer({ setCurrentPage, openDonateModal, openVolunteerM
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-surface-variant flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-secondary">
           <p>© {new Date().getFullYear()} {settings.orgName}. All Rights Reserved. Registered Non-Governmental Organization.</p>
-          <div className="flex items-center gap-4">
-            <a href={settings.socialLinks.facebook || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Facebook</a>
-            <a href={settings.socialLinks.twitter || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Twitter/X</a>
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="font-bold text-on-surface">Connect:</span>
+            <a href="mailto:brownheartcare@gmail.com" className="hover:text-primary transition-colors">Email</a>
             <a href={settings.socialLinks.instagram || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Instagram</a>
-            <a href={settings.socialLinks.linkedin || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">LinkedIn</a>
-            <a href={settings.socialLinks.youtube || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">YouTube</a>
+            <a href={settings.socialLinks.facebook || '#'} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Facebook</a>
           </div>
         </div>
       </div>

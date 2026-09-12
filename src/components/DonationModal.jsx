@@ -22,10 +22,10 @@ export default function DonationModal({ isOpen, onClose }) {
 
   const getImpactMessage = (val) => {
     const num = Number(val) || 0;
-    if (num < 30) return `Your $${num} gift provides essential well-being vitamins & nutrition for 2 children.`;
-    if (num < 75) return `Your $${num} gift provides a comprehensive welfare needs assessment & assessment test.`;
-    if (num < 150) return `Your $${num} gift covers emergency heart relief supply for a beneficiary in critical need.`;
-    return `Your $${num} gift directly subsidizes life-saving welfare procedure costs for low-income beneficiaries.`;
+    if (num < 30) return `Your $${num} gift provides essential meals and nutrition for 2 children.`;
+    if (num < 75) return `Your $${num} gift provides a comprehensive family food and welfare package.`;
+    if (num < 150) return `Your $${num} gift covers emergency relief supply for a beneficiary in critical need.`;
+    return `Your $${num} gift directly subsidizes life-saving community support programs for low-income beneficiaries.`;
   };
 
   const currentAmount = customAmount ? Number(customAmount) : amount;

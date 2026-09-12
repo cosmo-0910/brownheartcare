@@ -181,8 +181,20 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer, target
 
       // Save to Supabase
       await supabase.from('volunteers').insert([volunteerRecord]);
+
+      // Trigger Email Notification via Serverless API
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'volunteer_signup',
+          to: formData.email,
+          donorName: formData.fullName
+        })
+      });
+
     } catch (err) {
-      console.warn('Saved to local roster; Supabase sync notice:', err.message);
+      console.warn('Supabase/Email sync notice:', err.message);
     }
 
     if (onAddVolunteer) {
@@ -231,8 +243,8 @@ export default function VolunteerModal({ isOpen, onClose, onAddVolunteer, target
   const interestCards = [
     {
       id: 'support',
-      title: 'support Screening Outreach',
-      desc: 'Assist support staff and doctors during community health checks & vital screenings.',
+      title: 'Community Support & Welfare',
+      desc: 'Assist teams during community welfare checks & relief distribution.',
       icon: 'volunteer_activism'
     },
     {

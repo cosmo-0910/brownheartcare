@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePaystackPayment } from 'react-paystack';
 
 export default function Donate({ setCurrentPage, onAddDonation, targetSponsorEvent }) {
   const [currency, setCurrency] = useState('NGN'); // 'NGN' or 'USD'
@@ -49,18 +50,91 @@ export default function Donate({ setCurrentPage, onAddDonation, targetSponsorEve
     e.preventDefault();
     if (!currentAmount || currentAmount <= 0) return;
 
-    if (onAddDonation) {
-      onAddDonation({
-        name: donorInfo.name || 'Anonymous Donor',
-        email: donorInfo.email || 'donor@example.com',
-        amount: currentAmount,
-        currency: currency,
-        method: donorInfo.paymentMethod === 'card' ? 'Online Card / Stripe' : 'Bank Transfer',
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        event_title: targetSponsorEvent ? targetSponsorEvent.title : null
-      });
+    if (!donorInfo.email) {
+      alert('Please enter your email to proceed with payment.');
+      return;
     }
-    setDonated(true);
+
+    const config = {
+      reference: `don-${(new Date()).getTime().toString()}`,
+      email: donorInfo.email,
+      amount: currentAmount * 100, // Paystack amount is in kobo / cents
+      currency: currency,
+      publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_test_dummy',
+      metadata: {
+        custom_fields: [
+          {
+            display_name: 'Donor Name',
+            variable_name: 'donor_name',
+            value: donorInfo.name || 'Anonymous Donor'
+          },
+          {
+            display_name: 'Sponsor Event',
+            variable_name: 'sponsor_event',
+            value: targetSponsorEvent ? targetSponsorEvent.title : 'General Support'
+          }
+        ]
+      }
+    };
+
+    const initializePayment = usePaystackPayment(config);
+
+    const onSuccess = async (reference) => {
+      // 1. Record Donation in state / Supabase
+      if (onAddDonation) {
+        onAddDonation({
+          id: reference.reference || config.reference,
+          name: donorInfo.name || 'Anonymous Donor',
+          email: donorInfo.email,
+          amount: currentAmount,
+          currency: currency,
+          method: 'Paystack',
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          event_title: targetSponsorEvent ? targetSponsorEvent.title : null
+        });
+      }
+      setDonated(true);
+
+      // 2. Trigger Thank You Email via Serverless API
+      try {
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'donation_thank_you',
+            to: donorInfo.email,
+            donorName: donorInfo.name || 'Supporter',
+            amount: currentAmount,
+            currency: currency
+          })
+        });
+      } catch (err) {
+        console.error('Failed to send thank you email:', err);
+      }
+    };
+
+    const onClose = () => {
+      console.log('Payment modal closed');
+    };
+
+    if (donorInfo.paymentMethod === 'card') {
+      initializePayment({ onSuccess, onClose });
+    } else {
+      // Direct Bank Transfer Flow
+      if (onAddDonation) {
+        onAddDonation({
+          id: config.reference,
+          name: donorInfo.name || 'Anonymous Donor',
+          email: donorInfo.email || 'donor@example.com',
+          amount: currentAmount,
+          currency: currency,
+          method: 'Direct Bank Transfer',
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          event_title: targetSponsorEvent ? targetSponsorEvent.title : null
+        });
+      }
+      setDonated(true);
+    }
   };
 
   const handleContactSubmit = (e) => {
@@ -192,7 +266,7 @@ export default function Donate({ setCurrentPage, onAddDonation, targetSponsorEve
                 <div className="bg-[#ffd9de]/40 p-4 rounded-xl flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#b0004a] fill text-xl">favorite</span>
                   <p className="text-xs text-gray-700 font-medium leading-relaxed">
-                    Your {currency === 'NGN' ? `₦${currentAmount.toLocaleString()}` : `$${currentAmount}`} gift provides comprehensive heart screenings and emergency care.
+                    Your {currency === 'NGN' ? `₦${currentAmount.toLocaleString()}` : `$${currentAmount}`} gift provides essential food, emergency relief, and community welfare programs.
                   </p>
                 </div>
 
@@ -379,19 +453,10 @@ export default function Donate({ setCurrentPage, onAddDonation, targetSponsorEve
             {/* Info Box */}
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
               <div className="space-y-2">
-                <h3 className="font-heading font-bold text-base text-[#1a1c1c]">Foundation HQ</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  Brown's Heart Care Foundation<br />
-                  124 well-being Boulevard, Suite 400<br />
-                  support District, NY 10021
-                </p>
-              </div>
-
-              <div className="space-y-2">
                 <h3 className="font-heading font-bold text-base text-[#1a1c1c]">Phone & Email</h3>
                 <p className="text-xs text-gray-600 leading-relaxed">
-                  Phone: +1 (800) 555-HEART<br />
-                  Email: info@brownsheartcare.org
+                  Phone: 08136374060 / 09150973161<br />
+                  Email: brownheartcare@gmail.com
                 </p>
               </div>
             </div>
